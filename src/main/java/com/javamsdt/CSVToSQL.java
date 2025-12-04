@@ -39,7 +39,7 @@ public class CSVToSQL {
                 String password = nextLine[2].trim();
                 String email = nextLine[3].trim();
 
-                String SqlInsert = String.format("INSERT INTO users (id, username, password, email) VALUES (%d, '%s', '%s', '%s')",
+                String SqlInsert = String.format("INSERT INTO users (id, username, password, email) VALUES (%d, '%s', '%s', '%s');",
                         id, username, password, email);
 
                 writer.write(SqlInsert);
