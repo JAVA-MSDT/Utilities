@@ -9,8 +9,9 @@ package com.javamsdt.masking.controller;
 import com.javamsdt.masking.domain.User;
 import com.javamsdt.masking.dto.UserDto;
 import com.javamsdt.masking.mapper.UserMapper;
-import com.javamsdt.masking.mask.MaskOnInput;
-import com.javamsdt.masking.mask.MaskProcessor;
+import com.javamsdt.masking.mask.api.MaskProcessor;
+import com.javamsdt.masking.mask.implemintation.MaskOnInput;
+import com.javamsdt.masking.mask.implemintation.MaskPhone;
 import com.javamsdt.masking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +33,15 @@ public class UserController {
 
     @GetMapping("/masked/{id}")
     public UserDto getMaskedUserById(@PathVariable final Long id,
-                                     @RequestHeader("Mask-Input") String maskInput) {
+                                     @RequestHeader("Mask-Input") String maskInput,
+                                     @RequestHeader("Mask-Phone") String maskPhone) {
         System.out.println("MaskInput:: " + maskInput);
-        new MaskOnInput(maskInput);
+        System.out.println("MaskPhone:: " + maskPhone);
+
+        MaskProcessor processor = MaskProcessor.getInstance();
+        processor.setConditionInput(MaskOnInput.class, maskInput);
+        processor.setConditionInput(MaskPhone.class, maskPhone);
+
         return MaskProcessor.getInstance().process(userMapper.toDto(userService.findUserById(id)));
     }
 

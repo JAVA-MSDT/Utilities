@@ -4,10 +4,12 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.mask;
+package com.javamsdt.masking.mask.implemintation;
 
 
-public class AlwaysMaskCondition implements MaskCondition{
+import com.javamsdt.masking.mask.api.MaskCondition;
+
+public class AlwaysMaskCondition implements MaskCondition {
     @Override
     public boolean shouldMask(Object fieldValue, Object containingObject) {
         return true;

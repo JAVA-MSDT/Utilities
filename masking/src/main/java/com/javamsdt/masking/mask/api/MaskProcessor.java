@@ -4,7 +4,7 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.mask;
+package com.javamsdt.masking.mask.api;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -13,20 +13,44 @@ import java.lang.reflect.RecordComponent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MaskProcessor {
 
     private static final MaskProcessor INSTANCE = new MaskProcessor();
+    private final ThreadLocal<Map<Class<?>, Object>> conditionInputs = new ThreadLocal<>();
 
-    private MaskProcessor() {}
+    private MaskProcessor() {
+    }
 
     public static MaskProcessor getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * Set input for a specific condition class
+     */
+    public void setConditionInput(Class<? extends MaskCondition> conditionClass, Object input) {
+        Map<Class<?>, Object> inputs = conditionInputs.get();
+        if (inputs == null) {
+            inputs = new HashMap<>();
+            conditionInputs.set(inputs);
+        }
+        inputs.put(conditionClass, input);
+    }
 
     /**
-     * Process ANY object (class or record) and return masked COPY
+     * Clear thread-local inputs
+     */
+    public void clearInputs() {
+        System.out.println("Conditional inputs has #" + conditionInputs.get().size() + " Objects.");
+        conditionInputs.remove();
+        System.out.println("Conditional inputs cleared now is=" + conditionInputs.get());
+    }
+
+    /**
+     * Process with additional input for conditions
      */
     public <T> T process(T object) {
         if (object == null) {
@@ -43,24 +67,20 @@ public class MaskProcessor {
     }
 
     /**
-     * Process regular class (non-record)
+     * Process regular class
      */
     @SuppressWarnings("unchecked")
     private <T> T processRegularClass(T object) {
         try {
             Class<T> clazz = (Class<T>) object.getClass();
-
-            // Create a new instance
             T result = clazz.getDeclaredConstructor().newInstance();
 
-            // Process all fields (including parent classes)
             Class<?> currentClass = clazz;
             while (currentClass != null && currentClass != Object.class) {
                 for (Field field : currentClass.getDeclaredFields()) {
                     field.setAccessible(true);
                     Object fieldValue = field.get(object);
 
-                    // Check for Mask annotation
                     Mask annotation = field.getAnnotation(Mask.class);
                     if (annotation != null && shouldMask(annotation, fieldValue, object)) {
                         Object maskedValue = convertToFieldType(annotation.maskValue(), field.getType());
@@ -75,13 +95,14 @@ public class MaskProcessor {
             return result;
 
         } catch (Exception e) {
-            System.err.println("Error processing record: " + e.getMessage());
-            return object; // Return original if fails
+            return object;
+        } finally {
+            clearInputs();
         }
     }
 
     /**
-     * Process Java record - FIXED VERSION
+     * Process record
      */
     @SuppressWarnings("unchecked")
     private <T> T processRecord(T record) {
@@ -89,13 +110,11 @@ public class MaskProcessor {
             Class<?> recordClass = record.getClass();
             RecordComponent[] components = recordClass.getRecordComponents();
 
-            // Get the canonical constructor
             Class<?>[] paramTypes = Arrays.stream(components)
                     .map(RecordComponent::getType)
                     .toArray(Class[]::new);
             Constructor<?> constructor = recordClass.getDeclaredConstructor(paramTypes);
 
-            // Build constructor arguments
             Object[] args = new Object[components.length];
 
             for (int i = 0; i < components.length; i++) {
@@ -103,9 +122,7 @@ public class MaskProcessor {
                 Method accessor = component.getAccessor();
                 Object originalValue = accessor.invoke(record);
 
-                // Annotations on record components are stored on the component
                 Mask annotation = component.getAnnotation(Mask.class);
-
                 if (annotation != null && shouldMask(annotation, originalValue, record)) {
                     args[i] = convertToFieldType(annotation.maskValue(), component.getType());
                 } else {
@@ -113,43 +130,43 @@ public class MaskProcessor {
                 }
             }
 
-            // Create a new record instance
             return (T) constructor.newInstance(args);
 
         } catch (Exception e) {
-            System.err.println("Error processing record: " + e.getMessage());
-            return record; // Return original if fails
+            return record;
+        } finally {
+            clearInputs();
         }
     }
 
     /**
-     * Check if the field should be masked
+     * Check if the field should be masked with input support
      */
     private boolean shouldMask(Mask annotation, Object fieldValue, Object containingObject) {
         for (Class<? extends MaskCondition> conditionClass : annotation.conditions()) {
             try {
                 MaskCondition condition = conditionClass.getDeclaredConstructor().newInstance();
+
+                // Apply input if available
+                Map<Class<?>, Object> inputs = conditionInputs.get();
+                if (inputs != null && inputs.containsKey(conditionClass)) {
+                    condition.setInput(inputs.get(conditionClass));
+                }
+
                 if (condition.shouldMask(fieldValue, containingObject)) {
                     return true;
                 }
             } catch (Exception e) {
-                // Skip the condition if you can't instantiate
-                System.err.println("Error processing record: " + e.getMessage());
+                continue;
             }
         }
         return false;
     }
 
-    /**
-     * Convert maskValue string to field type
-     */
     private Object convertToFieldType(String maskValue, Class<?> fieldType) {
-        // Handle String
         if (fieldType == String.class) {
             return maskValue;
         }
-
-        // Handle LocalDate
         if (fieldType == LocalDate.class) {
             try {
                 return LocalDate.parse(maskValue, DateTimeFormatter.ISO_DATE);
@@ -157,14 +174,6 @@ public class MaskProcessor {
                 return null;
             }
         }
-
-        // Handle primitives
-        if (fieldType == int.class) return 0;
-        if (fieldType == long.class) return 0L;
-        if (fieldType == boolean.class) return false;
-        if (fieldType == double.class) return 0.0;
-
-        // For custom objects, return null
         return null;
     }
 }

@@ -7,9 +7,9 @@
 package com.javamsdt.masking.domain;
 
 
-import com.javamsdt.masking.mask.AlwaysMaskCondition;
-import com.javamsdt.masking.mask.Mask;
-import com.javamsdt.masking.mask.MaskOnInput;
+import com.javamsdt.masking.mask.api.Mask;
+import com.javamsdt.masking.mask.implemintation.AlwaysMaskCondition;
+import com.javamsdt.masking.mask.implemintation.MaskOnInput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,5 +32,4 @@ public class User {
     @Mask(conditions = {AlwaysMaskCondition.class})
     private LocalDate birthDate;
     private Gender gender;
-
 }
