@@ -21,7 +21,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class User {
     private Long id;
-    @Mask(conditions = {MaskOnInput.class})
+    @Mask(conditions = {MaskOnInput.class}, maskValue = "*****")
     private String name;
     @Mask(conditions = {AlwaysMaskCondition.class})
     private String email;

@@ -9,5 +9,4 @@ package com.javamsdt.masking.mask;
 
 public interface MaskCondition {
     boolean shouldMask(Object fieldValue, Object containingObject);
-
 }

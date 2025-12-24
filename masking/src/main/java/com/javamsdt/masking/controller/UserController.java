@@ -13,10 +13,7 @@ import com.javamsdt.masking.mask.MaskOnInput;
 import com.javamsdt.masking.mask.MaskProcessor;
 import com.javamsdt.masking.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,14 +31,17 @@ public class UserController {
     }
 
     @GetMapping("/masked/{id}")
-    public UserDto getMaskedUserById(@PathVariable final Long id) {
-        return  MaskProcessor.getInstance().process(userMapper.toDto(userService.findUserById(id)));
+    public UserDto getMaskedUserById(@PathVariable final Long id,
+                                     @RequestHeader("Mask-Input") String maskInput) {
+        System.out.println("MaskInput:: " + maskInput);
+        new MaskOnInput(maskInput);
+        return MaskProcessor.getInstance().process(userMapper.toDto(userService.findUserById(id)));
     }
 
     @GetMapping("/user/{id}")
     public User getUser(@PathVariable final Long id) {
-        new MaskOnInput("maskMe");
-        return   MaskProcessor.getInstance().process(userService.findUserById(id));
+        System.out.println("=== CONTROLLER METHOD START ===");
+        return MaskProcessor.getInstance().process(userService.findUserById(id));
     }
 
     @GetMapping
