@@ -9,6 +9,7 @@ package com.javamsdt.masking.domain;
 
 import com.javamsdt.masking.mask.AlwaysMaskCondition;
 import com.javamsdt.masking.mask.Mask;
+import com.javamsdt.masking.mask.MaskOnInput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class User {
     private Long id;
+    @Mask(conditions = {MaskOnInput.class})
     private String name;
     @Mask(conditions = {AlwaysMaskCondition.class})
     private String email;

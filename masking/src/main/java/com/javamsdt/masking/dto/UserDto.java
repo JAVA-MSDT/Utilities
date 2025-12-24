@@ -14,6 +14,7 @@ import java.time.LocalDate;
 
 public record UserDto(
          Long id,
+         @Mask(conditions = {AlwaysMaskCondition.class})
          String name,
          String email,
          @Mask(conditions = {AlwaysMaskCondition.class})
