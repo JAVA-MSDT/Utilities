@@ -1,0 +1,23 @@
+/**
+ * Copyright (c) 2025: Ahmed Samy, All rights reserved.
+ * LinkedIn: https://www.linkedin.com/in/java-msdt/
+ * GitHub: https://github.com/JAVA-MSDT
+ * Email: serenitydiver@hotmail.com
+ */
+package com.javamsdt.masking.dto;
+
+
+import java.time.LocalDate;
+
+public record UserDto(
+         Long id,
+         String name,
+         String email,
+         String password,
+         String phone,
+         AddressDto address,
+         LocalDate birthDate,
+         String genderId,
+         String genderName
+) {
+}
