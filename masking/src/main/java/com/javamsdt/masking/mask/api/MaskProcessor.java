@@ -10,18 +10,19 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class MaskProcessor {
 
+    private final static Logger LOGGER = Logger.getLogger(MaskProcessor.class.getName());
     private static final MaskProcessor INSTANCE = new MaskProcessor();
     private final ThreadLocal<Map<Class<?>, Object>> conditionInputs = new ThreadLocal<>();
 
     private MaskProcessor() {
+        LOGGER.info("MaskProcessor initialized");
     }
 
     public static MaskProcessor getInstance() {
@@ -44,9 +45,9 @@ public class MaskProcessor {
      * Clear thread-local inputs
      */
     public void clearInputs() {
-        System.out.println("Conditional inputs has #" + conditionInputs.get().size() + " Objects.");
+       LOGGER.info("Conditional inputs have " + conditionInputs.get().size() + " Objects.");
         conditionInputs.remove();
-        System.out.println("Conditional inputs cleared now is=" + conditionInputs.get());
+        LOGGER.info("Conditional inputs cleared now is=" + conditionInputs.get());
     }
 
     /**
@@ -164,16 +165,6 @@ public class MaskProcessor {
     }
 
     private Object convertToFieldType(String maskValue, Class<?> fieldType) {
-        if (fieldType == String.class) {
-            return maskValue;
-        }
-        if (fieldType == LocalDate.class) {
-            try {
-                return LocalDate.parse(maskValue, DateTimeFormatter.ISO_DATE);
-            } catch (Exception e) {
-                return null;
-            }
-        }
-        return null;
+        return TypeConverter.convertToFieldType(maskValue, fieldType);
     }
 }

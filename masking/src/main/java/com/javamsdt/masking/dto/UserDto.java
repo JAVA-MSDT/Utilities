@@ -15,7 +15,7 @@ import com.javamsdt.masking.mask.implemintation.MaskPhone;
 import java.time.LocalDate;
 
 public record UserDto(
-        @Mask(conditions = {AlwaysMaskCondition.class})
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1000")
         Long id,
         @Mask(conditions = {MaskOnInput.class}, maskValue = "[USER_NAME]")
         String name,
@@ -24,9 +24,8 @@ public record UserDto(
         String password,
         @Mask(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
         String phone,
-        @Mask(conditions = {AlwaysMaskCondition.class})
         AddressDto address,
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01")
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
         LocalDate birthDate,
         String genderId,
         String genderName
