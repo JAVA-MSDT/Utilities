@@ -7,12 +7,16 @@
 package com.javamsdt.masking.dto;
 
 
+import com.javamsdt.masking.mask.AlwaysMaskCondition;
+import com.javamsdt.masking.mask.Mask;
+
 import java.time.LocalDate;
 
 public record UserDto(
          Long id,
          String name,
          String email,
+         @Mask(conditions = {AlwaysMaskCondition.class})
          String password,
          String phone,
          AddressDto address,

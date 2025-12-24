@@ -6,8 +6,10 @@
  */
 package com.javamsdt.masking.controller;
 
+import com.javamsdt.masking.domain.User;
 import com.javamsdt.masking.dto.UserDto;
 import com.javamsdt.masking.mapper.UserMapper;
+import com.javamsdt.masking.mask.MaskProcessor;
 import com.javamsdt.masking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,18 @@ public class UserController {
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable final Long id) {
         return userMapper.toDto(userService.findUserById(id));
+    }
+
+    @GetMapping("/masked/{id}")
+    public UserDto getMaskedUserById(@PathVariable final Long id) {
+        MaskProcessor processor = new MaskProcessor();
+        return processor.process(userMapper.toDto(userService.findUserById(id)));
+    }
+
+    @GetMapping("/user/{id}")
+    public User getUser(@PathVariable final Long id) {
+        MaskProcessor processor = new MaskProcessor();
+        return processor.process(userService.findUserById(id));
     }
 
     @GetMapping
