@@ -54,7 +54,7 @@ public class UserController {
     @GetMapping
     public List<UserDto> getUsers() {
         return userService.findUsers().stream()
-                .map(userMapper::toDto)
+                .map(user -> MaskProcessor.getInstance().process(userMapper.toDto(user)))
                 .toList();
     }
 }

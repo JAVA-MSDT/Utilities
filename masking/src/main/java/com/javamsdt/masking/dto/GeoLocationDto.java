@@ -10,15 +10,13 @@ package com.javamsdt.masking.dto;
 import com.javamsdt.masking.mask.api.Mask;
 import com.javamsdt.masking.mask.implemintation.AlwaysMaskCondition;
 
-public record AddressDto(
-         Long id,
-         String street,
-         String building,
-         @Mask(conditions = {AlwaysMaskCondition.class})
-         String city,
-         String state,
-         String zipCode,
-         String country,
-         GeoLocationDto geoLocation
+import java.util.UUID;
+
+public record GeoLocationDto(
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "00000000-0000-0000-0000-000000000000")
+        UUID id,
+        Double longitude,
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "00.0000")
+        Double latitude
 ) {
 }

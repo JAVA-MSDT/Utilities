@@ -101,13 +101,13 @@ public class MaskProcessor {
                         Object maskedValue = convertToFieldType(annotation.maskValue(), field.getType());
                         field.set(result, maskedValue);
                     } else {
-                        // Check if field is an embedded object that needs recursive processing
+                        // Check if a field is an embedded object that needs recursive processing
                         if (shouldProcessEmbeddedObject(field, fieldValue)) {
                             // Recursively process the embedded object
                             Object processedEmbeddedObject = process(fieldValue);
                             field.set(result, processedEmbeddedObject);
                         } else {
-                            // Keep original value
+                            // Keep the original value
                             field.set(result, fieldValue);
                         }
                     }
@@ -240,7 +240,7 @@ public class MaskProcessor {
     }
 
     /**
-     * Check if type is from java.time package
+     * Check if the type is from the java Time package
      */
     private boolean isJavaTimeType(Class<?> type) {
         return type.getPackage() != null &&
@@ -248,7 +248,7 @@ public class MaskProcessor {
     }
 
     /**
-     * Check if type is a common Java type that shouldn't be recursively processed
+     * Check if the type is a common Java type that shouldn't be recursively processed
      */
     private boolean isCommonJavaType(Class<?> type) {
         String typeName = type.getName();
@@ -282,7 +282,6 @@ public class MaskProcessor {
                 }
             } catch (Exception e) {
                 LOGGER.warning("Failed to instantiate condition: " + conditionClass.getName());
-                continue;
             }
         }
         return false;
