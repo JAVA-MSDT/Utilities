@@ -18,5 +18,5 @@ public @interface Mask {
     Class<? extends MaskCondition>[] conditions();
 
     // Mask value to display
-    String maskValue() default "***";
+    String maskValue() default "****";
 }

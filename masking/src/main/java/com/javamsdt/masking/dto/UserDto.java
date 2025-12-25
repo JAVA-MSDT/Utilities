@@ -12,6 +12,8 @@ import com.javamsdt.masking.mask.implemintation.AlwaysMaskCondition;
 import com.javamsdt.masking.mask.implemintation.MaskOnInput;
 import com.javamsdt.masking.mask.implemintation.MaskPhone;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 public record UserDto(
@@ -28,6 +30,10 @@ public record UserDto(
         @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
         LocalDate birthDate,
         String genderId,
-        String genderName
+        String genderName,
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "0.0")
+        BigDecimal balance,
+        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
+        Instant createdAt
 ) {
 }

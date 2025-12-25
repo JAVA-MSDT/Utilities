@@ -1,18 +1,10 @@
-/**
- * Copyright (c) 2025: Ahmed Samy, All rights reserved.
- * LinkedIn: https://www.linkedin.com/in/java-msdt/
- * GitHub: https://github.com/JAVA-MSDT
- * Email: serenitydiver@hotmail.com
- */
 package com.javamsdt.masking.mask.api;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class MaskProcessor {
@@ -20,6 +12,10 @@ public class MaskProcessor {
     private final static Logger LOGGER = Logger.getLogger(MaskProcessor.class.getName());
     private static final MaskProcessor INSTANCE = new MaskProcessor();
     private final ThreadLocal<Map<Class<?>, Object>> conditionInputs = new ThreadLocal<>();
+
+    // Prevent infinite recursion with circular references
+    private final ThreadLocal<Set<Object>> processingObjects =
+            ThreadLocal.withInitial(() -> Collections.newSetFromMap(new IdentityHashMap<>()));
 
     private MaskProcessor() {
         LOGGER.info("MaskProcessor initialized");
@@ -45,9 +41,12 @@ public class MaskProcessor {
      * Clear thread-local inputs
      */
     public void clearInputs() {
-       LOGGER.info("Conditional inputs have " + conditionInputs.get().size() + " Objects.");
-        conditionInputs.remove();
-        LOGGER.info("Conditional inputs cleared now is=" + conditionInputs.get());
+        Map<Class<?>, Object> inputs = conditionInputs.get();
+        if (inputs != null) {
+            LOGGER.info("Conditional inputs have " + inputs.size() + " Objects.");
+            conditionInputs.remove();
+        }
+        processingObjects.remove();
     }
 
     /**
@@ -58,17 +57,30 @@ public class MaskProcessor {
             return null;
         }
 
-        Class<?> clazz = object.getClass();
+        // Check for circular references
+        if (processingObjects.get().contains(object)) {
+            LOGGER.warning("Circular reference detected, returning original object");
+            return object;
+        }
 
-        if (clazz.isRecord()) {
-            return processRecord(object);
-        } else {
-            return processRegularClass(object);
+        try {
+            processingObjects.get().add(object);
+
+            Class<?> clazz = object.getClass();
+
+            if (clazz.isRecord()) {
+                return processRecord(object);
+            } else {
+                return processRegularClass(object);
+            }
+        } finally {
+            processingObjects.get().remove(object);
+            clearInputs();
         }
     }
 
     /**
-     * Process regular class
+     * Process regular class with recursive embedded object support
      */
     @SuppressWarnings("unchecked")
     private <T> T processRegularClass(T object) {
@@ -83,11 +95,21 @@ public class MaskProcessor {
                     Object fieldValue = field.get(object);
 
                     Mask annotation = field.getAnnotation(Mask.class);
+
                     if (annotation != null && shouldMask(annotation, fieldValue, object)) {
+                        // Mask this field
                         Object maskedValue = convertToFieldType(annotation.maskValue(), field.getType());
                         field.set(result, maskedValue);
                     } else {
-                        field.set(result, fieldValue);
+                        // Check if field is an embedded object that needs recursive processing
+                        if (shouldProcessEmbeddedObject(field, fieldValue)) {
+                            // Recursively process the embedded object
+                            Object processedEmbeddedObject = process(fieldValue);
+                            field.set(result, processedEmbeddedObject);
+                        } else {
+                            // Keep original value
+                            field.set(result, fieldValue);
+                        }
                     }
                 }
                 currentClass = currentClass.getSuperclass();
@@ -96,6 +118,7 @@ public class MaskProcessor {
             return result;
 
         } catch (Exception e) {
+            LOGGER.severe("Failed to process regular class: " + e.getMessage());
             return object;
         } finally {
             clearInputs();
@@ -103,7 +126,7 @@ public class MaskProcessor {
     }
 
     /**
-     * Process record
+     * Process record with recursive embedded object support
      */
     @SuppressWarnings("unchecked")
     private <T> T processRecord(T record) {
@@ -127,17 +150,117 @@ public class MaskProcessor {
                 if (annotation != null && shouldMask(annotation, originalValue, record)) {
                     args[i] = convertToFieldType(annotation.maskValue(), component.getType());
                 } else {
-                    args[i] = originalValue;
+                    // Check if this is an embedded object that needs recursive processing
+                    if (shouldProcessEmbeddedObject(component, originalValue)) {
+                        args[i] = process(originalValue);
+                    } else {
+                        args[i] = originalValue;
+                    }
                 }
             }
 
             return (T) constructor.newInstance(args);
 
         } catch (Exception e) {
+            LOGGER.severe("Failed to process record: " + e.getMessage());
             return record;
         } finally {
             clearInputs();
         }
+    }
+
+    /**
+     * Determine if an embedded object should be processed recursively
+     */
+    private boolean shouldProcessEmbeddedObject(Object fieldOrComponent, Object fieldValue) {
+        if (fieldValue == null) {
+            return false;
+        }
+
+        Class<?> fieldType = getFieldType(fieldOrComponent);
+
+        // Skip primitive types, wrappers, and common Java types
+        if (fieldType.isPrimitive() ||
+                fieldType.isEnum() ||
+                isJavaLangType(fieldType) ||
+                isJavaTimeType(fieldType) ||
+                isCommonJavaType(fieldType)) {
+            return false;
+        }
+
+        // Check if the embedded object has any @Mask annotations
+        return hasMaskAnnotations(fieldValue.getClass());
+    }
+
+    /**
+     * Get field type from Field or RecordComponent
+     */
+    private Class<?> getFieldType(Object fieldOrComponent) {
+        if (fieldOrComponent instanceof Field) {
+            return ((Field) fieldOrComponent).getType();
+        } else if (fieldOrComponent instanceof RecordComponent) {
+            return ((RecordComponent) fieldOrComponent).getType();
+        }
+        return Object.class;
+    }
+
+    /**
+     * Check if a class has any @Mask annotations on its fields/components
+     */
+    private boolean hasMaskAnnotations(Class<?> clazz) {
+        // Check regular class fields
+        if (!clazz.isRecord()) {
+            Class<?> currentClass = clazz;
+            while (currentClass != null && currentClass != Object.class) {
+                for (Field field : currentClass.getDeclaredFields()) {
+                    if (field.getAnnotation(Mask.class) != null) {
+                        return true;
+                    }
+                }
+                currentClass = currentClass.getSuperclass();
+            }
+        } else {
+            // Check record components
+            for (RecordComponent component : clazz.getRecordComponents()) {
+                if (component.getAnnotation(Mask.class) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if type is from java.lang package
+     */
+    private boolean isJavaLangType(Class<?> type) {
+        return type.getPackage() != null &&
+                type.getPackage().getName().equals("java.lang") &&
+                !type.isPrimitive();
+    }
+
+    /**
+     * Check if type is from java.time package
+     */
+    private boolean isJavaTimeType(Class<?> type) {
+        return type.getPackage() != null &&
+                type.getPackage().getName().equals("java.time");
+    }
+
+    /**
+     * Check if type is a common Java type that shouldn't be recursively processed
+     */
+    private boolean isCommonJavaType(Class<?> type) {
+        String typeName = type.getName();
+        return typeName.startsWith("java.math.") ||
+                typeName.startsWith("java.net.") ||
+                typeName.startsWith("java.io.") ||
+                typeName.startsWith("java.nio.") ||
+                typeName.startsWith("java.util.") && !typeName.contains("$") ||
+                type == UUID.class ||
+                type == Locale.class ||
+                type == Currency.class ||
+                type == Class.class;
     }
 
     /**
@@ -158,6 +281,7 @@ public class MaskProcessor {
                     return true;
                 }
             } catch (Exception e) {
+                LOGGER.warning("Failed to instantiate condition: " + conditionClass.getName());
                 continue;
             }
         }
