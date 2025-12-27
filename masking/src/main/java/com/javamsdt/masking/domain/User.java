@@ -7,31 +7,30 @@
 package com.javamsdt.masking.domain;
 
 
-import com.javamsdt.masking.mask.api.Mask;
-import com.javamsdt.masking.mask.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.mask.implemintation.MaskOnInput;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import com.javamsdt.masking.maskme.api.MaskMe;
+import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
     private Long id;
-    @Mask(conditions = {MaskOnInput.class}, maskValue = "*****")
+    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "*****")
     private String name;
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     private String email;
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     private String password;
     private String phone;
     private Address address;
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     private LocalDate birthDate;
     private Gender gender;
     private BigDecimal balance;

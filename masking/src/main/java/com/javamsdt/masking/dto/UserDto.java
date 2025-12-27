@@ -7,33 +7,34 @@
 package com.javamsdt.masking.dto;
 
 
-import com.javamsdt.masking.mask.api.Mask;
-import com.javamsdt.masking.mask.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.mask.implemintation.MaskOnInput;
-import com.javamsdt.masking.mask.implemintation.MaskPhone;
-
+import com.javamsdt.masking.maskme.api.MaskMe;
+import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
+import com.javamsdt.masking.maskme.implemintation.MaskPhone;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
 public record UserDto(
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1000")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1000")
         Long id,
-        @Mask(conditions = {MaskOnInput.class}, maskValue = "[USER_NAME]")
+        @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
         String name,
+
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
         String email,
-        @Mask(conditions = {AlwaysMaskCondition.class})
+        @MaskMe(conditions = {AlwaysMaskCondition.class})
         String password,
-        @Mask(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
+        @MaskMe(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
         String phone,
         AddressDto address,
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
         LocalDate birthDate,
         String genderId,
         String genderName,
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "0.0")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "")
         BigDecimal balance,
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
         Instant createdAt
 ) {
 }

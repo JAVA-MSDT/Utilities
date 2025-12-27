@@ -4,9 +4,9 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.mask.implemintation;
+package com.javamsdt.masking.maskme.implemintation;
 
-import com.javamsdt.masking.mask.api.MaskCondition;
+import com.javamsdt.masking.maskme.api.MaskCondition;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 

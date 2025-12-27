@@ -2,17 +2,22 @@
 
 ## 📋 Overview
 
-The Field Masking is a lightweight, annotation-based solution for dynamically masking sensitive data in Java objects. It supports both regular Java classes and Java Records, with conditional masking based on runtime inputs.
+The Field Masking is a modern, annotation-based solution for dynamically masking sensitive data in Java objects. It supports both regular Java classes and Java Records, with conditional masking based on runtime inputs and Spring integration.
 
 ## 🚀 Features
 
-- ✅ **Annotation-based masking** - Simple `@Mask` annotation
+- ✅ **Annotation-based masking** - Simple `@MaskMe` annotation
 - ✅ **Conditional masking** – Mask based on runtime conditions
-- ✅ **Type-safe** - Handles various data types (String, LocalDate, custom objects)
+- ✅ **Spring Integration** - Full Spring Context support with dependency injection
+- ✅ **Type-safe** - Comprehensive type conversion system
 - ✅ **Framework-agnostic** - Works with any Java project
 - ✅ **Thread-safe** - Proper handling of concurrent requests
 - ✅ **No modification of originals** – Returns new masked instances
 - ✅ **Supports both Classes and Records**
+- ✅ **Original Value Manipulation** - Transform original values when mask is blank
+- ✅ **Modular Converter Architecture** - Clean, extensible type conversion
+- ✅ **Field-Specific Logic** - Context-aware masking based on field names
+- ✅ **Placeholder Support** - Dynamic field referencing with `[fieldName]` syntax
 
 ## 📦 Installation
 - Not there yet, but maybe in the future :) 
@@ -21,25 +26,65 @@ The Field Masking is a lightweight, annotation-based solution for dynamically ma
 <dependency>
     <groupId>com.masking</groupId>
     <artifactId>masking-library</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 ### Gradle
 ```groovy
-implementation 'com.masking:masking-library:1.0.0'
+implementation 'com.masking:masking-library:2.0.0'
 ```
+
+## 🎨 Architecture
+
+### Core Components
+
+```
+com.javamsdt.masking.maskme.api/
+├── MaskMe.java                  # Annotation for marking fields
+├── MaskCondition.java           # Interface for masking conditions
+├── MaskProcessor.java           # Main processing engine
+├── MaskConditionFactory.java    # Spring-aware condition factory
+└── MaskingException.java        # Custom exception handling
+
+com.javamsdt.masking.maskme.api.converter/
+├── Converter.java               # Base converter interface
+├── ConverterFactory.java        # Orchestrates type conversion
+├── NumberConverter.java         # Numeric types (BigDecimal, Integer, etc.)
+├── DateTimeConverter.java       # Temporal types (LocalDate, Instant, etc.)
+├── PrimitiveConverter.java      # Basic types (String, Boolean, Character)
+├── SpecialTypeConverter.java    # Special types (UUID, URL, Enum, etc.)
+├── FallbackConverter.java       # Reflection-based fallback
+└── FieldAccessUtil.java         # Field access and placeholder utilities
+
+com.javamsdt.masking.maskme.implemintation/
+├── AlwaysMaskCondition.java     # Always masks fields
+├── MaskOnInput.java             # Input-based conditional masking
+└── MaskPhone.java               # Phone number masking condition
+
+com.javamsdt.masking.config/
+└── MaskingConfiguration.java    # Spring auto-configuration
+```
+
+### Type Conversion System
+
+The library uses a modular converter architecture with specialized converters:
+
+- **Chain of Responsibility** - Tries converters in order until one succeeds
+- **Spring Integration** - Converters can access Spring-managed beans
+- **Original Value Access** - Converters can manipulate original field values
+- **Switch Expressions** - Modern Java syntax for clean type mapping
 
 ## 🎯 Core Components
 
-### 1. `@Mask` Annotation
+### 1. `@MaskMe` Annotation
 
 ```java
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.RECORD_COMPONENT})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Mask {
+public @interface MaskMe {
     Class<? extends MaskCondition>[] conditions();
-    String maskValue() default "***";
+    String maskValue() default "****";
 }
 ```
 
@@ -61,46 +106,52 @@ The main processing class that handles masking logic.
 
 ## 📖 Basic Usage
 
-### 1. Define Your DTO with `@Mask` Annotations
+### 1. Define Your DTO with `@MaskMe` Annotations
 
 #### For Records:
 ```java
 public record UserDto(
-        @Mask(conditions = {AlwaysMaskCondition.class})
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1000")
         Long id,
         
-        @Mask(conditions = {MaskOnInput.class}, maskValue = "[USER_NAME]")
+        @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
         String name,
         
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
         String email,
         
-        @Mask(conditions = {AlwaysMaskCondition.class})
+        @MaskMe(conditions = {AlwaysMaskCondition.class})
         String password,
         
-        @Mask(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
+        @MaskMe(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
         String phone,
         
-        @Mask(conditions = {AlwaysMaskCondition.class})
         AddressDto address,
         
-        @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
         LocalDate birthDate,
         
         String genderId,
-        String genderName
+        String genderName,
+        
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "")
+        BigDecimal balance,
+        
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
+        Instant createdAt
 ) {}
 ```
 
 #### For Regular Classes:
 ```java
 public class User {
-    @Mask(conditions = {MaskOnInput.class}, maskValue = "*****")
+    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "*****")
     private String name;
     
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     private String email;
     
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     private LocalDate birthDate;
     
     // Getters and setters
@@ -108,6 +159,34 @@ public class User {
 ```
 
 ### 2. Implement Mask Conditions
+
+#### Spring-Managed Condition (Recommended):
+```java
+@Component
+public class MaskOnInput implements MaskCondition {
+    
+    @Autowired
+    private UserService userService; // Can inject Spring beans
+    
+    private String input;
+    
+    @Override
+    public void setInput(Object input) {
+        if (input instanceof String) {
+            this.input = (String) input;
+        }
+    }
+    
+    @Override
+    public boolean shouldMask(Object fieldValue, Object containingObject) {
+        // Can use injected services
+        if (userService != null) {
+            // Business logic using service
+        }
+        return input != null && input.equalsIgnoreCase("MaskMe");
+    }
+}
+```
 
 #### Always Mask Condition:
 ```java
@@ -119,7 +198,7 @@ public class AlwaysMaskCondition implements MaskCondition {
 }
 ```
 
-#### Input-Based Condition:
+#### Legacy Non-Spring Condition:
 ```java
 public class MaskOnInput implements MaskCondition {
     
@@ -168,42 +247,105 @@ public class MaskPhone implements MaskCondition {
 
 ```java
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
     
-    @Autowired
-    private UserService userService;
-    
-    @Autowired
-    private UserMapper userMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final MaskProcessor processor;
     
     @GetMapping("/masked/{id}")
     public UserDto getMaskedUserById(@PathVariable final Long id,
                                      @RequestHeader("Mask-Input") String maskInput,
                                      @RequestHeader("Mask-Phone") String maskPhone) {
         
-        // Get the processor instance
-        MaskProcessor processor = MaskProcessor.getInstance();
-        
-        // Set condition inputs from request headers
-        processor.setConditionInput(MaskOnInput.class, maskInput);
-        processor.setConditionInput(MaskPhone.class, maskPhone);
-        
         try {
-            // Get the original user and convert to DTO
-            User user = userService.findUserById(id);
-            UserDto userDto = userMapper.toDto(user);
-            
-            // Apply masking
-            return processor.process(userDto);
+            processor.setConditionInput(MaskOnInput.class, maskInput);
+            processor.setConditionInput(MaskPhone.class, maskPhone);
+            return processor.process(userMapper.toDto(userService.findUserById(id)));
         } finally {
-            // Clear inputs to prevent memory leaks
-            // Also, it is already cleared in finally in MaskProcessor
+            processor.clearInputs();
+        }
+    }
+    
+    @GetMapping
+    public List<UserDto> getUsers(@RequestHeader("Mask-Input") String maskInput) {
+        try {
+            processor.setConditionInput(MaskOnInput.class, maskInput);
+            return userService.findUsers().stream()
+                    .map(user -> processor.process(userMapper.toDto(user)))
+                    .toList();
+        } finally {
             processor.clearInputs();
         }
     }
 }
 ```
+
+## 🔧 Advanced Features
+
+### Field-Specific Processing
+
+The library includes intelligent field-specific processing:
+
+- **Name fields**: Automatically append "[][]" to mask values for identification
+- **Email fields**: Domain replacement when original contains '@' symbol
+- **Placeholder support**: Use `[fieldName]` to reference other field values
+
+```java
+public record UserDto(
+    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "****")
+    String name, // Results in "****[][]"
+    
+    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
+    String email, // Results in "john@[name] it is me.domain" if original is "john@company.com"
+    
+    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
+    String displayName // Results in "123-M" if id=123 and genderId="M"
+) {}
+```
+
+### Original Value Manipulation
+
+When `maskValue` is blank/empty, converters can manipulate the original field value:
+
+```java
+public record FinancialDto(
+    @MaskMe(conditions = {SensitiveDataCondition.class}, maskValue = "") // Empty mask value
+    BigDecimal amount
+) {}
+```
+
+**Result**: If `amount = 123.45`, it becomes `100.00` (rounded to nearest 50)
+
+### Custom Converter Example
+
+```java
+public class CustomNumberConverter implements Converter {
+    
+    @Override
+    public boolean canConvert(Class<?> type) {
+        return type == BigDecimal.class;
+    }
+    
+    @Override
+    public Object convert(String value, Class<?> targetType, Object originalValue) {
+        if (value.isBlank() && originalValue instanceof BigDecimal original) {
+            // Custom manipulation logic
+            return original.multiply(new BigDecimal("0.5")); // Half the value
+        }
+        return new BigDecimal(value);
+    }
+}
+```
+
+### Spring Integration Benefits
+
+- **Dependency Injection**: Mask conditions can use `@Autowired` services
+- **Auto-Configuration**: Automatic setup via `MaskingConfiguration`
+- **Bean Management**: Spring manages condition lifecycle
+- **Fallback Support**: Works in non-Spring environments
 
 ## 🛠 Advanced Usage
 
@@ -211,10 +353,10 @@ public class UserController {
 
 ```java
 public record SensitiveDataDto(
-    @Mask(conditions = {AdminOnlyCondition.class, AuditLogCondition.class})
+    @MaskMe(conditions = {AdminOnlyCondition.class, AuditLogCondition.class})
     String secretData,
     
-    @Mask(conditions = {TimeBasedCondition.class, LocationBasedCondition.class})
+    @MaskMe(conditions = {TimeBasedCondition.class, LocationBasedCondition.class})
     String locationData
 ) {}
 ```
@@ -248,11 +390,8 @@ public class RoleBasedCondition implements MaskCondition {
 ```java
 @Configuration
 public class MaskingConfig {
-    
-    @Bean
-    public MaskProcessor maskProcessor() {
-        return MaskProcessor.getInstance();
-    }
+    // MaskProcessor is automatically configured as @Component
+    // No manual bean configuration needed
 }
 ```
 
@@ -261,11 +400,19 @@ public class MaskingConfig {
 ### Setting Default Mask Values
 
 ```java
-// In your application configuration
-@PostConstruct
-public void initMasking() {
-    MaskProcessor processor = MaskProcessor.getInstance();
-    processor.setConditionInput(AlwaysMaskCondition.class, true);
+@Component
+public class MaskingInitializer {
+    
+    private final MaskProcessor processor;
+    
+    public MaskingInitializer(MaskProcessor processor) {
+        this.processor = processor;
+    }
+    
+    @PostConstruct
+    public void initMasking() {
+        processor.setConditionInput(AlwaysMaskCondition.class, true);
+    }
 }
 ```
 
@@ -274,16 +421,27 @@ public void initMasking() {
 ### Example 1: Basic Masking
 
 ```java
-// Controller
-@GetMapping("/user/{id}")
-public UserDto getUser(@PathVariable Long id) {
-    UserDto dto = userService.getUserDto(id);
-    return MaskProcessor.getInstance().process(dto);
+@RestController
+public class UserController {
+    
+    private final UserService userService;
+    private final MaskProcessor processor;
+    
+    public UserController(UserService userService, MaskProcessor processor) {
+        this.userService = userService;
+        this.processor = processor;
+    }
+    
+    @GetMapping("/user/{id}")
+    public UserDto getUser(@PathVariable Long id) {
+        UserDto dto = userService.getUserDto(id);
+        return processor.process(dto);
+    }
 }
 
 // DTO
 public record UserDto(
-    @Mask(conditions = {AlwaysMaskCondition.class}, maskValue = "CONFIDENTIAL")
+    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "CONFIDENTIAL")
     String ssn
 ) {}
 ```
@@ -291,20 +449,31 @@ public record UserDto(
 ### Example 2: Conditional Masking with Request Parameters
 
 ```java
-@GetMapping("/user/{id}/conditional")
-public UserDto getConditionalUser(@PathVariable Long id,
-                                  @RequestParam boolean maskEmail,
-                                  @RequestParam boolean maskPhone) {
+@RestController
+public class UserController {
     
-    MaskProcessor processor = MaskProcessor.getInstance();
-    processor.setConditionInput(EmailMaskCondition.class, maskEmail);
-    processor.setConditionInput(PhoneMaskCondition.class, maskPhone);
+    private final UserService userService;
+    private final MaskProcessor processor;
     
-    try {
-        UserDto dto = userService.getUserDto(id);
-        return processor.process(dto);
-    } finally {
-        processor.clearInputs();
+    public UserController(UserService userService, MaskProcessor processor) {
+        this.userService = userService;
+        this.processor = processor;
+    }
+    
+    @GetMapping("/user/{id}/conditional")
+    public UserDto getConditionalUser(@PathVariable Long id,
+                                      @RequestParam boolean maskEmail,
+                                      @RequestParam boolean maskPhone) {
+        
+        try {
+            processor.setConditionInput(EmailMaskCondition.class, maskEmail);
+            processor.setConditionInput(PhoneMaskCondition.class, maskPhone);
+            
+            UserDto dto = userService.getUserDto(id);
+            return processor.process(dto);
+        } finally {
+            processor.clearInputs();
+        }
     }
 }
 ```
@@ -315,13 +484,13 @@ public UserDto getConditionalUser(@PathVariable Long id,
 public record OrderDto(
     Long id,
     
-    @Mask(conditions = {CustomerVisibleCondition.class})
+    @MaskMe(conditions = {CustomerVisibleCondition.class})
     CustomerDto customer,
     
-    @Mask(conditions = {PriceMaskCondition.class})
+    @MaskMe(conditions = {PriceMaskCondition.class})
     BigDecimal totalPrice,
     
-    List<@Mask(conditions = {ProductMaskCondition.class}) ProductDto> products
+    List<@MaskMe(conditions = {ProductMaskCondition.class}) ProductDto> products // needs validation.
 ) {}
 ```
 
@@ -348,13 +517,13 @@ For Java Records, annotations must be placed on the record components:
 ```java
 // ✓ Correct
 public record UserDto(
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     String email
 ) {}
 
 // ✗ Incorrect - won't work
 public record UserDto(String email) {
-    @Mask(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskCondition.class})
     public String email() {
         return email;
     }
@@ -362,36 +531,74 @@ public record UserDto(String email) {
 ```
 
 ### 4. Type Conversion
-The library automatically converts mask values to the appropriate type:
 
-| Field Type     | Mask Value      | Result                     |
-|----------------|-----------------|----------------------------|
-| `String`       | `"***"`         | `"***"`                    |
-| `LocalDate`    | `"1900-01-01"`  | `LocalDate.of(1900, 1, 1)` |
-| `Integer`      | `"0"`           | `0`                        |
-| Custom Object  | Any             | `null`                     |
+The library uses a modular converter system that automatically converts mask values to appropriate types:
+
+| Field Type     | Mask Value      | Result                     | Converter Used       |
+|----------------|-----------------|----------------------------|----------------------|
+| `String`       | `"***"`         | `"***"`                    | PrimitiveConverter   |
+| `LocalDate`    | `"1900-01-01"`  | `LocalDate.of(1900, 1, 1)` | DateTimeConverter    |
+| `Integer`      | `"0"`           | `0`                        | NumberConverter      |
+| `BigDecimal`   | `""` (blank)    | Rounded to nearest 50      | NumberConverter      |
+| `UUID`         | `"uuid-string"` | `UUID.fromString(...)`     | SpecialTypeConverter |
+| Custom Object  | Any             | `null` or reflection       | FallbackConverter    |
+
+### 5. Supported Types
+
+#### NumberConverter
+- All numeric primitives and wrappers (byte, int, long, float, double)
+- BigDecimal, BigInteger
+- **Special**: BigDecimal with blank mask value rounds to nearest 50
+
+#### DateTimeConverter  
+- LocalDate, LocalDateTime, LocalTime
+- Instant, ZonedDateTime, OffsetDateTime
+- Year, YearMonth, MonthDay
+- Legacy java.util.Date, java.sql types
+
+#### SpecialTypeConverter
+- UUID, URL, URI
+- File, Path
+- Enums (case-insensitive)
+- Locale, Currency, Class
+- Arrays (basic support)
+
+#### PrimitiveConverter
+- String, Character, Boolean
+- Handles primitive and wrapper types
+- **Special**: Field-specific logic for "name" and "email" fields
+- **Name fields**: Appends "[][]" to mask values
+- **Email fields**: Domain replacement when original contains '@'
 
 ## 🧪 Testing
 
 ### Unit Test Example
 
 ```java
-@Test
-public void testMaskingWithInput() {
-    // Given
-    UserDto original = new UserDto(1L, "John Doe", "john@email.com");
-    MaskProcessor processor = MaskProcessor.getInstance();
+@SpringBootTest
+class MaskingTest {
     
-    // When
-    processor.setConditionInput(MaskOnInput.class, "MaskMe");
-    UserDto masked = processor.process(original);
+    @Autowired
+    private MaskProcessor processor;
     
-    // Then
-    assertNotEquals(original, masked);
-    assertEquals("[USER_NAME]", masked.name());
-    assertEquals("john@email.com", masked.email());
-    
-    processor.clearInputs();
+    @Test
+    public void testMaskingWithInput() {
+        // Given
+        UserDto original = new UserDto(1L, "John Doe", "john@email.com");
+        
+        try {
+            // When
+            processor.setConditionInput(MaskOnInput.class, "MaskMe");
+            UserDto masked = processor.process(original);
+            
+            // Then
+            assertNotEquals(original, masked);
+            assertEquals("[id]-[genderId]", masked.name());
+            assertEquals("john@email.com", masked.email());
+        } finally {
+            processor.clearInputs();
+        }
+    }
 }
 ```
 
@@ -402,14 +609,17 @@ public void testMaskingWithInput() {
 @AutoConfigureMockMvc
 public class UserControllerTest {
     
+    @Autowired
+    private MockMvc mockMvc;
+    
     @Test
     public void testMaskedEndpoint() throws Exception {
-        mockMvc.perform(get("/api/users/masked/1")
+        mockMvc.perform(get("/users/masked/1")
                 .header("Mask-Input", "MaskMe")
                 .header("Mask-Phone", "YES"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("[USER_NAME]"))
-                .andExpect(jsonPath("$.phone").value("[PHONE_MASKED]"));
+                .andExpected(jsonPath("$.name").value("[id]-[genderId]"))
+                .andExpected(jsonPath("$.phone").value("[PHONE_MASKED]"));
     }
 }
 ```
@@ -423,7 +633,7 @@ public class UserControllerTest {
     - Annotations must be on record components, not accessor methods
 
 2. **Processor called multiple times**
-    - Check for duplicate `@Mask` annotations
+    - Check for duplicate `@MaskMe` annotations
     - Ensure you're not calling `process()` multiple times
     - Check for ResponseBodyAdvice interceptors
 
@@ -441,13 +651,75 @@ public class UserControllerTest {
 - **Lightweight**: Minimal overhead for processing
 - **Thread-local storage**: Condition inputs are stored per thread
 
+## 📊 Performance & Best Practices
+
+### Performance Optimizations
+
+- **Switch Expressions**: Modern Java syntax for efficient type matching
+- **Chain of Responsibility**: Early exit when converter found
+- **ThreadLocal Management**: Proper cleanup prevents memory leaks
+- **Spring Bean Caching**: Reuses managed instances when available
+
+### Best Practices
+
+1. **Use Spring Components**: Prefer `@Component` conditions for dependency injection
+2. **Clear Inputs**: Always use try-finally blocks to clear ThreadLocal inputs
+3. **Blank Mask Values**: Use empty strings to trigger original value manipulation
+4. **Type Safety**: Leverage the converter system for automatic type conversion
+
+```java
+// ✅ Good - Spring managed with proper cleanup
+@Component
+public class BusinessLogicCondition implements MaskCondition {
+    @Autowired private BusinessService service;
+    
+    @Override
+    public boolean shouldMask(Object fieldValue, Object containingObject) {
+        return service.shouldMaskField(fieldValue);
+    }
+}
+
+// ✅ Good - Proper controller usage
+@GetMapping("/users")
+public List<UserDto> getUsers(@RequestHeader("MaskMe-Input") String input) {
+    try {
+        processor.setConditionInput(MaskOnInput.class, input);
+        return users.stream().map(processor::process).toList();
+    } finally {
+        processor.clearInputs(); // Always clear
+    }
+}
+```
+
 ## 🔮 Future Enhancements
-- Working on that :) 
+
 1. **Spring Boot Starter**: Auto-configuration support
-2. **Jackson Integration**: Direct JSON serialization support
-3. **Annotation Inheritance**: Support for inherited annotations
+2. **Jackson Integration**: Direct JSON serialization support  
+3. **Custom Converter Registration**: Plugin system for custom converters
 4. **Expression Language**: SpEL support in conditions
-5. **Performance caching**: Optional caching for reflection
+5. **Performance Caching**: Optional metadata caching
+6. **Annotation Inheritance**: Support for inherited annotations
+7. **Async Processing**: Non-blocking masking operations
+
+## 📝 Changelog
+
+### v1.0.0
+- ✨ Basic annotation-based masking, `@MaskMe` annotation.
+- ✨ Record and class support
+- ✨ ThreadLocal condition inputs
+- ✨ **Spring Integration**: Full ApplicationContext support
+- ✨ **Modular Converters**: Specialized converter architecture
+- ✨ **Original Value Manipulation**: Transform values when mask is blank
+- ✨ **Switch Expressions**: Modern Java syntax
+- ✨ **Enhanced Type Support**: Comprehensive type conversion
+- ✨ **Field-Specific Processing**: Context-aware masking based on field names
+- ✨ **Enhanced Placeholder Support**: Dynamic field referencing with `[fieldName]`
+- ✨ **Improved Converter Architecture**: ConverterFactory with 5-parameter convert method
+- ✨ **Name Field Logic**: Automatic "[][]" appending for name fields
+- ✨ **Email Domain Replacement**: Smart email masking with domain substitution
+- ✨ **Updated Header Names**: Changed from "MaskMe-*" to "Mask-*" format
+- ✨ **Enhanced Type Support**: Better BigDecimal, Instant, and complex type handling
+- ✨ **Comprehensive Test Coverage**: Full test suite for all components
 
 ## 📄 License
 

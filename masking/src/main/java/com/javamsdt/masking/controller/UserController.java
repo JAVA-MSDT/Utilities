@@ -9,14 +9,17 @@ package com.javamsdt.masking.controller;
 import com.javamsdt.masking.domain.User;
 import com.javamsdt.masking.dto.UserDto;
 import com.javamsdt.masking.mapper.UserMapper;
-import com.javamsdt.masking.mask.api.MaskProcessor;
-import com.javamsdt.masking.mask.implemintation.MaskOnInput;
-import com.javamsdt.masking.mask.implemintation.MaskPhone;
+import com.javamsdt.masking.maskme.api.MaskProcessor;
+import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
+import com.javamsdt.masking.maskme.implemintation.MaskPhone;
 import com.javamsdt.masking.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/users")
@@ -25,6 +28,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final MaskProcessor processor;
 
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable final Long id) {
@@ -35,26 +39,30 @@ public class UserController {
     public UserDto getMaskedUserById(@PathVariable final Long id,
                                      @RequestHeader("Mask-Input") String maskInput,
                                      @RequestHeader("Mask-Phone") String maskPhone) {
-        System.out.println("MaskInput:: " + maskInput);
-        System.out.println("MaskPhone:: " + maskPhone);
 
-        MaskProcessor processor = MaskProcessor.getInstance();
-        processor.setConditionInput(MaskOnInput.class, maskInput);
-        processor.setConditionInput(MaskPhone.class, maskPhone);
-
-        return MaskProcessor.getInstance().process(userMapper.toDto(userService.findUserById(id)));
+        try {
+            processor.setConditionInput(MaskOnInput.class, maskInput);
+            processor.setConditionInput(MaskPhone.class, maskPhone);
+            return processor.process(userMapper.toDto(userService.findUserById(id)));
+        } finally {
+            processor.clearInputs();
+        }
     }
 
     @GetMapping("/user/{id}")
     public User getUser(@PathVariable final Long id) {
-        System.out.println("=== CONTROLLER METHOD START ===");
-        return MaskProcessor.getInstance().process(userService.findUserById(id));
+        return processor.process(userService.findUserById(id));
     }
 
     @GetMapping
-    public List<UserDto> getUsers() {
-        return userService.findUsers().stream()
-                .map(user -> MaskProcessor.getInstance().process(userMapper.toDto(user)))
-                .toList();
+    public List<UserDto> getUsers(@RequestHeader("Mask-Input") String maskInput) {
+        try {
+            processor.setConditionInput(MaskOnInput.class, maskInput);
+            return userService.findUsers().stream()
+                    .map(user -> processor.process(userMapper.toDto(user)))
+                    .toList();
+        } finally {
+            processor.clearInputs();
+        }
     }
 }
