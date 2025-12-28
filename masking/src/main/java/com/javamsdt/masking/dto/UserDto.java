@@ -7,10 +7,11 @@
 package com.javamsdt.masking.dto;
 
 
-import com.javamsdt.masking.maskme.api.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
-import com.javamsdt.masking.maskme.implemintation.MaskPhone;
+import com.javamsdt.masking.maskme.api.masking.MaskMe;
+import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskOnInput;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskPhone;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;

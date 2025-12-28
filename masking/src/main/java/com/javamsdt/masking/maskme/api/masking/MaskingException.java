@@ -1,4 +1,4 @@
-package com.javamsdt.masking.maskme.api;
+package com.javamsdt.masking.maskme.api.masking;
 
 /**
  * Runtime exception thrown when masking operations encounter unrecoverable errors.

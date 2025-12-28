@@ -6,14 +6,15 @@
  */
 package com.javamsdt.masking.maskme.api.converter;
 
-import com.javamsdt.masking.maskme.api.MaskingException;
+import com.javamsdt.masking.maskme.api.masking.MaskingException;
+import lombok.NoArgsConstructor;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import lombok.NoArgsConstructor;
 
 /**
  * Utility class for field access and placeholder replacement in maskme values.

@@ -1,11 +1,12 @@
 package com.javamsdt.masking.maskme.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-
+import com.javamsdt.masking.maskme.api.masking.MaskingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 @DisplayName("MaskingException Tests")
 class MaskingExceptionTest {

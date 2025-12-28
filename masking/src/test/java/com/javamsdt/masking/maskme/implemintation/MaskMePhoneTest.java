@@ -1,11 +1,12 @@
 package com.javamsdt.masking.maskme.implemintation;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import com.javamsdt.masking.maskme.implemintation.masking.MaskPhone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("MaskPhone Tests")
 class MaskMePhoneTest {

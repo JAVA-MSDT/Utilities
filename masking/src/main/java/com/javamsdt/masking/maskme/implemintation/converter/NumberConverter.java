@@ -4,7 +4,10 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.maskme.api.converter;
+package com.javamsdt.masking.maskme.implemintation.converter;
+
+import com.javamsdt.masking.maskme.api.converter.Converter;
+import com.javamsdt.masking.maskme.api.converter.FieldAccessUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -56,7 +59,7 @@ public class NumberConverter implements Converter {
     @Override
     public Object convert(String value, Class<?> targetType, Object originalValue, Object containingObject, String fieldName) {
         // Handle context placeholders if needed for future enhancements
-        String processedValue = FieldAccessUtil.hasFieldPlaceholders(value) ? 
+        String processedValue = FieldAccessUtil.hasFieldPlaceholders(value) ?
             FieldAccessUtil.replaceFieldPlaceholders(value, containingObject) : value;
             
         // Handle null/blank maskme value - manipulate original value

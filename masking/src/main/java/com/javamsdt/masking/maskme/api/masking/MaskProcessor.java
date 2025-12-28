@@ -1,21 +1,14 @@
-package com.javamsdt.masking.maskme.api;
+package com.javamsdt.masking.maskme.api.masking;
 
 import com.javamsdt.masking.maskme.api.converter.ConverterFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Currency;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import java.util.*;
 
 /**
  * Core engine for processing objects with @MaskMe annotations.

@@ -9,17 +9,14 @@ package com.javamsdt.masking.controller;
 import com.javamsdt.masking.domain.User;
 import com.javamsdt.masking.dto.UserDto;
 import com.javamsdt.masking.mapper.UserMapper;
-import com.javamsdt.masking.maskme.api.MaskProcessor;
-import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
-import com.javamsdt.masking.maskme.implemintation.MaskPhone;
+import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskOnInput;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskPhone;
 import com.javamsdt.masking.service.UserService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")

@@ -7,8 +7,8 @@
 package com.javamsdt.masking.dto;
 
 
-import com.javamsdt.masking.maskme.api.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.api.masking.MaskMe;
+import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
 
 public record AddressDto(
          Long id,

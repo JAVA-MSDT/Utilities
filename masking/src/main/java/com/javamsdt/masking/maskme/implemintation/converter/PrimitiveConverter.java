@@ -4,7 +4,10 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.maskme.api.converter;
+package com.javamsdt.masking.maskme.implemintation.converter;
+
+import com.javamsdt.masking.maskme.api.converter.Converter;
+import com.javamsdt.masking.maskme.api.converter.FieldAccessUtil;
 
 import java.util.Set;
 
@@ -44,7 +47,7 @@ public class PrimitiveConverter implements Converter {
     @Override
     public Object convert(String value, Class<?> targetType, Object originalValue, Object containingObject, String fieldName) {
         // Handle context placeholders first
-        String processedValue = FieldAccessUtil.hasFieldPlaceholders(value) ? 
+        String processedValue = FieldAccessUtil.hasFieldPlaceholders(value) ?
             FieldAccessUtil.replaceFieldPlaceholders(value, containingObject) : value;
         
         return switch (targetType.getName()) {

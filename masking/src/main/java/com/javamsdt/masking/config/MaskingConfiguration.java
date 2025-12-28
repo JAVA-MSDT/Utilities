@@ -5,7 +5,8 @@
  */
 package com.javamsdt.masking.config;
 
-import com.javamsdt.masking.maskme.api.MaskConditionFactory;
+import com.javamsdt.masking.maskme.api.masking.MaskConditionFactory;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class MaskingConfiguration implements ApplicationContextAware {
     
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
         MaskConditionFactory.setApplicationContext(applicationContext);
     }
 }

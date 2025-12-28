@@ -4,10 +4,10 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.maskme.implemintation;
+package com.javamsdt.masking.maskme.implemintation.masking;
 
 
-import com.javamsdt.masking.maskme.api.MaskCondition;
+import com.javamsdt.masking.maskme.api.masking.MaskCondition;
 
 public class AlwaysMaskCondition implements MaskCondition {
     @Override

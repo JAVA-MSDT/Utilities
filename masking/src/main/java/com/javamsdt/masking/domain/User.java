@@ -7,15 +7,16 @@
 package com.javamsdt.masking.domain;
 
 
-import com.javamsdt.masking.maskme.api.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.maskme.implemintation.MaskOnInput;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
+import com.javamsdt.masking.maskme.api.masking.MaskMe;
+import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskOnInput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor

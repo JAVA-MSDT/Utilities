@@ -4,7 +4,7 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.maskme.api;
+package com.javamsdt.masking.maskme.api.masking;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

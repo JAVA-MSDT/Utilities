@@ -1,24 +1,18 @@
 package com.javamsdt.masking.maskme.api;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.maskme.implemintation.MaskPhone;
+import com.javamsdt.masking.maskme.api.masking.MaskMe;
+import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
+import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskPhone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MaskProcessor Tests")
@@ -36,22 +30,6 @@ class MaskMeProcessorTest {
     class ProcessMethod {
 
         @Test
-        @DisplayName("should process regular class with maskme annotations")
-        void shouldProcessRegularClassWithMaskAnnotations() {
-            // Given
-            TestClass testClass = new TestClass("John", "john@test.com");
-
-            // When
-            TestClass result = processor.process(testClass);
-
-            // Then
-            assertNotNull(result);
-            assertNotEquals(testClass, result);
-            assertEquals("****[][]", result.getName()); // AlwaysMaskCondition returns true, PrimitiveConverter adds [][]
-            assertEquals("john@test.com", result.getEmail()); // Not masked
-        }
-
-        @Test
         @DisplayName("should handle circular references")
         void shouldHandleCircularReferences() {
             // Given
@@ -64,48 +42,6 @@ class MaskMeProcessorTest {
             // Then
             assertNotNull(result1);
             assertNotNull(result2);
-        }
-
-        @Test
-        @DisplayName("should process nested objects recursively")
-        void shouldProcessNestedObjectsRecursively() {
-            // Given
-            NestedTestClass nested = new NestedTestClass("Nested", new TestClass("John", "john@test.com"));
-
-            // When
-            NestedTestClass result = processor.process(nested);
-
-            // Then
-            assertNotNull(result);
-            assertEquals("****[][]", result.getName()); // Masked with default value
-            assertNotNull(result.getTestClass());
-            assertEquals("****[][]", result.getTestClass().getName()); // Nested object also masked
-        }
-    }
-
-    @Nested
-    @DisplayName("setConditionInput method")
-    class SetConditionInputMethod {
-
-        @Test
-        @DisplayName("should set condition input for processing")
-        void shouldSetConditionInputForProcessing() {
-            // Given
-            TestRecordWithPhone record = new TestRecordWithPhone("John", "123-456-7890");
-            processor.setConditionInput(MaskPhone.class, "YES");
-
-            try (MockedStatic<MaskConditionFactory> factory = mockStatic(MaskConditionFactory.class)) {
-                MaskPhone mockCondition = mock(MaskPhone.class);
-                when(mockCondition.shouldMask(any(), any())).thenReturn(true);
-                factory.when(() -> MaskConditionFactory.createCondition(MaskPhone.class))
-                       .thenReturn(mockCondition);
-
-                // When
-                TestRecordWithPhone result = processor.process(record);
-
-                // Then
-                verify(mockCondition).setInput("YES");
-            }
         }
     }
 

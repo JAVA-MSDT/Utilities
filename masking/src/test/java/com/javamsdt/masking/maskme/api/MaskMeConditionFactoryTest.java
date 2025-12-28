@@ -1,11 +1,10 @@
 package com.javamsdt.masking.maskme.api;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
-
-import com.javamsdt.masking.maskme.implemintation.AlwaysMaskCondition;
-import com.javamsdt.masking.maskme.implemintation.MaskPhone;
+import com.javamsdt.masking.maskme.api.masking.MaskCondition;
+import com.javamsdt.masking.maskme.api.masking.MaskConditionFactory;
+import com.javamsdt.masking.maskme.api.masking.MaskingException;
+import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.masking.maskme.implemintation.masking.MaskPhone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MaskConditionFactory Tests")
@@ -74,7 +77,7 @@ class MaskMeConditionFactoryTest {
             MaskConditionFactory.setApplicationContext(null);
 
             // When & Then
-            assertThrows(MaskingException.class, () -> 
+            assertThrows(MaskingException.class, () ->
                 MaskConditionFactory.createCondition(AbstractCondition.class));
         }
     }
