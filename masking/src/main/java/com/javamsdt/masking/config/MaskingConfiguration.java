@@ -7,28 +7,41 @@ package com.javamsdt.masking.config;
 
 import com.javamsdt.masking.maskconverter.CustomStringConverter;
 import com.javamsdt.masking.maskme.api.converter.ConverterRegistry;
+import com.javamsdt.masking.maskme.api.masking.FrameworkProvider;
 import com.javamsdt.masking.maskme.api.masking.MaskConditionFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.jspecify.annotations.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MaskingConfiguration implements ApplicationContextAware {
-    
-    @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-        MaskConditionFactory.setApplicationContext(applicationContext);
-    }
+@RequiredArgsConstructor
+public class MaskingConfiguration {
+
+    private final ApplicationContext applicationContext;
 
     @PostConstruct
     public void registerCustomConverters() {
+        registerMaskConditionProvider();
         // Clear Global
         ConverterRegistry.clearGlobal();
         // Register user's custom converters
         ConverterRegistry.registerGlobal(new CustomStringConverter());
+    }
+
+    public void registerMaskConditionProvider() {
+        // One-time registration at startup
+        MaskConditionFactory.setFrameworkProvider(new FrameworkProvider() {
+            @Override
+            public <T> T getInstance(Class<T> type) {
+                try {
+                    return applicationContext.getBean(type);
+                } catch (Exception e) {
+                    return null; // Not a Spring bean
+                }
+            }
+        });
     }
 
     @PreDestroy

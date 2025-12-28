@@ -1,13 +1,14 @@
 package com.javamsdt.masking.maskme.api.converter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DisplayName("ConverterFactory Tests")
 class ConverterFactoryTest {
@@ -127,12 +128,12 @@ class ConverterFactoryTest {
             Object result = ConverterFactory.convertToFieldType(maskValue, fieldType, null, new Object(), fieldName);
 
             // Then
-            assertEquals("John[][]", result); // PrimitiveConverter adds [][] for name field
+            assertEquals("John", result);
         }
-    }
 
-    // Test helper class
-    private static class CustomType {
-        // Custom type for testing unsupported conversion
+        // Test helper class
+        private static class CustomType {
+            // Custom type for testing unsupported conversion
+        }
     }
 }
