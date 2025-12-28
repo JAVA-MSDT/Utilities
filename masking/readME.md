@@ -319,7 +319,20 @@ public record FinancialDto(
 
 **Result**: If `amount = 123.45`, it becomes `100.00` (rounded to nearest 50)
 
-### Custom Converter Example
+---
+
+## Custom Converter
+### 📋 Overview
+The Masking Library provides a flexible converter system that allows you to **override or extend** default type conversion behavior. You can create custom converters for specific field types or field names, giving you full control over how masked values are generated.
+
+### 🎯 Why Use Custom Converters?
+- **Override default behavior** for specific field types
+- **Add field-specific logic** based on field names
+- **Implement business-specific masking rules**
+- **Handle custom data types** not supported by default
+- **Priority-based execution** ensures your converters run first
+
+### 🔧 How It Works
 
 ```java
 public class CustomNumberConverter implements Converter {
@@ -339,6 +352,8 @@ public class CustomNumberConverter implements Converter {
     }
 }
 ```
+
+### [🔄 Scoped Converter Registry – Safe Usage Guide](documentation/Converter.md)
 
 ### Spring Integration Benefits
 

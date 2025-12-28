@@ -58,12 +58,5 @@ public class ConverterFactory {
                 containingObject, fieldName);
     }
 
-    /**
-     * Register a user custom converter (convenience method)
-     */
-    public static void registerCustomConverter(Converter converter) {
-        ConverterRegistry.registerConverter(converter);
-    }
-
 }
 
