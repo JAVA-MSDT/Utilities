@@ -11,10 +11,14 @@ import com.javamsdt.masking.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 @RequiredArgsConstructor
 public class MaskOnInput implements MaskCondition {
 
+    public static final String MASK_ON_INPUT_ONE_KEY = "MaskOnInputOne";
+    public static final String MASK_ON_INPUT_TWO_KEY = "MaskOnInputTwo";
     private final UserService userService;
     private String input;
     private String expectedInput;
@@ -24,22 +28,18 @@ public class MaskOnInput implements MaskCondition {
         if (userService != null) {
             System.out.println("User One:: " + userService.findUserById(1L));
         }
-        return input != null && input.equalsIgnoreCase("MaskMe");
+        return input != null && input.equalsIgnoreCase(expectedInput);
     }
 
     @Override
-    public void setInput(Object input) {
-        if (input instanceof String value) {
-            this.input = value;
-        }
-    }
-
-    @Override
-    public void setExpectedInput(Object expectedInput) {
-        if (expectedInput instanceof String value) {
-            System.out.println(" Input:: " + this.input);
-            System.out.println("Expected Input:: " + value);
-            this.expectedInput = value;
+    public void setInput(Map<String, Object> input) {
+        if (!input.isEmpty()) {
+           if(input.containsKey(MASK_ON_INPUT_ONE_KEY)) {
+               this.input = (String) input.get(MASK_ON_INPUT_ONE_KEY);
+           }
+           if(input.containsKey(MASK_ON_INPUT_TWO_KEY)) {
+               this.expectedInput = (String) input.get(MASK_ON_INPUT_TWO_KEY);
+           }
         }
     }
 }

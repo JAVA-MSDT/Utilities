@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -38,8 +39,14 @@ public class UserController {
                                      @RequestHeader("Mask-Phone") String maskPhone) {
 
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput, "MaskMe");
-            processor.setConditionInput(MaskPhone.class, maskPhone, null);
+            Map<String, Object> maskOnInputConditions = Map.of(MaskOnInput.MASK_ON_INPUT_ONE_KEY, maskInput,
+                    MaskOnInput.MASK_ON_INPUT_TWO_KEY, "MaskInput");
+
+            Map<String, Object> maskPhoneInputCondition = Map.of(MaskPhone.MASK_PHONE_KEY_ONE, maskPhone,
+                    MaskPhone.MASK_PHONE_KEY_TWO, "MaskPhone");
+
+            processor.setConditionInput(MaskOnInput.class, maskOnInputConditions);
+            processor.setConditionInput(MaskPhone.class, maskPhoneInputCondition);
             return processor.process(userMapper.toDto(userService.findUserById(id)));
         } finally {
             processor.clearInputs();
@@ -54,7 +61,10 @@ public class UserController {
     @GetMapping
     public List<UserDto> getUsers(@RequestHeader("Mask-Input") String maskInput) {
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput, "");
+            Map<String, Object> maskOnInputConditions = Map.of(MaskOnInput.MASK_ON_INPUT_ONE_KEY, maskInput,
+                    MaskOnInput.MASK_ON_INPUT_TWO_KEY, "MaskMe");
+            processor.setConditionInput(MaskOnInput.class, maskOnInputConditions);
+
             return userService.findUsers().stream()
                     .map(user -> processor.process(userMapper.toDto(user)))
                     .toList();

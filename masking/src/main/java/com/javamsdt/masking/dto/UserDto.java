@@ -22,7 +22,7 @@ public record UserDto(
         @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
         String name,
 
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
+        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name]")
         String email,
         @MaskMe(conditions = {AlwaysMaskCondition.class})
         String password,

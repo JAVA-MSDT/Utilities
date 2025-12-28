@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -53,7 +55,7 @@ class MaskMeProcessorTest {
         @DisplayName("should clear condition inputs")
         void shouldClearConditionInputs() {
             // Given
-            processor.setConditionInput(MaskPhone.class, "YES");
+            processor.setConditionInput(MaskPhone.class, Map.of("key", "value"));
 
             // When
             processor.clearInputs();

@@ -6,6 +6,8 @@
  */
 package com.javamsdt.masking.maskme.api.masking;
 
+import java.util.Map;
+
 /**
  * Interface for implementing conditional masking logic.
  * Determines whether a field should be masked based on runtime conditions,
@@ -46,7 +48,7 @@ package com.javamsdt.masking.maskme.api.masking;
 public interface MaskCondition {
     
     /**
-     * Determines whether the field should be masked based on current context.
+     * Determines whether the field should be masked based on the current context.
      * Called for each field with @MaskMe annotation during processing.
      * 
      * @param fieldValue the current value of the field being evaluated
@@ -64,25 +66,9 @@ public interface MaskCondition {
      * - Provide request headers for context-aware decisions
      * - Supply configuration flags for dynamic behavior
      * 
-     * @param input the runtime input for this condition (can be null)
+     * @param inputs the runtime input for this condition (can be null)
      */
-    default void setInput(Object input) {
-        // Default implementation does nothing
-    }
-
-    /**
-     * Accepts runtime input for condition evaluation.
-     * Called by MaskProcessor before shouldMask() to provide context-specific data.
-     * It can be used with the following input.Equal(expectedInput), the input is coming from setInput.
-     *
-     * <p>Use cases:
-     * - to compare 2 inputs if it is required
-     * - Provide request headers for context-aware decisions
-     * - Supply configuration flags for dynamic behavior
-     *
-     * @param expectedInput the runtime input for this condition (can be null)
-     */
-    default void setExpectedInput(Object expectedInput) {
+    default void setInput(Map<String, Object> inputs) {
         // Default implementation does nothing
     }
 }

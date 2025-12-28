@@ -26,7 +26,7 @@ import java.util.*;
 @Slf4j
 public final class MaskProcessor {
 
-    private final ThreadLocal<Map<Class<?>, Object[]>> conditionInputs = new ThreadLocal<>();
+    private final ThreadLocal<Map<Class<?>, Map<String, Object>>> conditionInputs = new ThreadLocal<>();
 
     // Prevent infinite recursion with circular references
     private final ThreadLocal<Set<Object>> processingObjects =
@@ -48,13 +48,13 @@ public final class MaskProcessor {
      * @param conditionClass the condition class to receive the input
      * @param input the runtime input for the condition
      */
-    public void setConditionInput(Class<? extends MaskCondition> conditionClass, Object input, Object expectedInput) {
-        Map<Class<?>, Object[]> inputs = conditionInputs.get();
+    public void setConditionInput(Class<? extends MaskCondition> conditionClass, Map<String, Object> input) {
+        Map<Class<?>, Map<String, Object>> inputs = conditionInputs.get();
         if (inputs == null) {
             inputs = new HashMap<>();
             conditionInputs.set(inputs);
         }
-        inputs.put(conditionClass, new Object[]{input, expectedInput});
+        inputs.put(conditionClass, input);
     }
 
     /**
@@ -72,7 +72,7 @@ public final class MaskProcessor {
      * }</pre>
      */
     public void clearInputs() {
-        Map<Class<?>, Object[]> inputs = conditionInputs.get();
+        Map<Class<?>, Map<String, Object>> inputs = conditionInputs.get();
         if (inputs != null) {
             log.info("Conditional inputs have {} Objects.", inputs.size());
             conditionInputs.remove();
@@ -365,10 +365,9 @@ public final class MaskProcessor {
                 MaskCondition condition = MaskConditionFactory.createCondition(conditionClass);
 
                 // Apply input if available
-                Map<Class<?>, Object[]> inputs = conditionInputs.get();
+                Map<Class<?>, Map<String, Object>> inputs = conditionInputs.get();
                 if (inputs != null && inputs.containsKey(conditionClass)) {
-                    condition.setInput(inputs.get(conditionClass)[0]);
-                    condition.setExpectedInput(inputs.get(conditionClass)[1]);
+                    condition.setInput(inputs.get(conditionClass));
                 }
 
                 if (condition.shouldMask(fieldValue, containingObject)) {

@@ -29,11 +29,11 @@ public class CustomStringConverter implements Converter {
                           Object containingObject, String fieldName) {
 
         // User's custom logic for String fields
-        if ("password".equals(fieldName)) {
+        if (fieldName.contains("password")) {
             return "************";
         }
 
-        if ("email".equals(fieldName)) {
+        if (fieldName.contains("email")) {
             return "[EMAIL PROTECTED]";
         }
 
