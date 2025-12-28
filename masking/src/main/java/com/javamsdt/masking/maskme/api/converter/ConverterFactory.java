@@ -6,14 +6,8 @@
  */
 package com.javamsdt.masking.maskme.api.converter;
 
-import com.javamsdt.masking.maskme.implemintation.converter.DateTimeConverter;
-import com.javamsdt.masking.maskme.implemintation.converter.NumberConverter;
-import com.javamsdt.masking.maskme.implemintation.converter.PrimitiveConverter;
-import com.javamsdt.masking.maskme.implemintation.converter.SpecialTypeConverter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * Factory for orchestrating type conversion using specialized converter chain.
@@ -39,18 +33,11 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConverterFactory {
 
-    private static final List<Converter> CONVERTERS = List.of(
-        new PrimitiveConverter(),
-        new NumberConverter(),
-        new DateTimeConverter(),
-        new SpecialTypeConverter(),
-        new FallbackConverter() // Always last
-    );
-
     /**
-     * Converts string maskme value to the target field type using converter chain.
+     *  Main conversion method - delegates to registry.
+     * Converts string maskme value to the target field type using a converter chain.
      * Iterates through specialized converters until one can handle the target type.
-     * Provides full context including original value and containing object.
+     * Provides full context including original value and containing an object.
      * 
      * <p>Conversion examples:
      * - maskValue="***", fieldType=String.class → "***"
@@ -64,52 +51,19 @@ public class ConverterFactory {
      * @param fieldName the name of the field being processed
      * @return converted value or appropriate default
      */
-    public static Object convertToFieldType(String maskValue, Class<?> fieldType, Object originalValue, Object containingObject, String fieldName) {
-        if (maskValue == null) {
-            return getDefaultValue(fieldType);
-        }
-
-        for (Converter converter : CONVERTERS) {
-            if (converter.canConvert(fieldType)) {
-                Object result = converter.convert(maskValue, fieldType, originalValue, containingObject, fieldName);
-                if (result != null || !shouldTryNextConverter(converter)) {
-                    return result;
-                }
-            }
-        }
-
-        return getDefaultValue(fieldType);
+    public static Object convertToFieldType(String maskValue, Class<?> fieldType,
+                                            Object originalValue, Object containingObject,
+                                            String fieldName) {
+        return ConverterRegistry.convertToFieldType(maskValue, fieldType, originalValue,
+                containingObject, fieldName);
     }
 
     /**
-     * Determines if the converter chain should continue after a null result.
-     * Stops chain progression when FallbackConverter is reached as it's the final option.
-     * 
-     * @param converter the converter that returned null
-     * @return true if the next converter should be tried
+     * Register a user custom converter (convenience method)
      */
-    private static boolean shouldTryNextConverter(Converter converter) {
-        // Don't try the next converter if this is the fallback converter
-        return !(converter instanceof FallbackConverter);
+    public static void registerCustomConverter(Converter converter) {
+        ConverterRegistry.registerConverter(converter);
     }
 
-    /**
-     * Provides appropriate default values for primitive types when conversion fails.
-     * Returns null for reference types and type-specific defaults for primitives.
-     * 
-     * @param type the target type needing a default value
-     * @return default value for the type
-     */
-    private static Object getDefaultValue(Class<?> type) {
-        if (type == boolean.class) return false;
-        if (type == byte.class) return (byte) 0;
-        if (type == short.class) return (short) 0;
-        if (type == int.class) return 0;
-        if (type == long.class) return 0L;
-        if (type == float.class) return 0.0f;
-        if (type == double.class) return 0.0d;
-        if (type == char.class) return '\0';
-        return null;
-    }
 }
 

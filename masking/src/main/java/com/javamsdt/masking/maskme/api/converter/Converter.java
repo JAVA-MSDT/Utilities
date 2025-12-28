@@ -31,7 +31,7 @@ public interface Converter {
     
     /**
      * Determines if this converter can handle the specified type.
-     * Called by ConverterFactory to find appropriate converter for field type.
+     * Called by ConverterFactory to find the appropriate converter for a field type.
      * 
      * @param type the target type to check
      * @return true if this converter supports the type
@@ -56,4 +56,12 @@ public interface Converter {
      * @return converted value or null if conversion not possible
      */
     Object convert(String value, Class<?> targetType, Object originalValue, Object containingObject, String fieldName);
+
+    /**
+     * Gets the priority of this converter (higher = earlier in a chain).
+     * The default is 0. User custom converters should use > 0 for higher priority.
+     */
+    default int getPriority() {
+        return 0;
+    }
 }
