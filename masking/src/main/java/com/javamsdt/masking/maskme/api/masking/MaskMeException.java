@@ -20,15 +20,19 @@ package com.javamsdt.masking.maskme.api.masking;
  * @author Ahmed Samy
  * @since 1.0.0
  */
-public class MaskingException extends RuntimeException {
+public class MaskMeException extends RuntimeException {
     
     /**
-     * Creates a new MaskingException with detailed message and root cause.
+     * Creates a new MaskMeException with a detailed message and root cause.
      * 
      * @param message descriptive error message
      * @param cause the underlying exception that triggered this error
      */
-    public MaskingException(String message, Throwable cause) {
+    public MaskMeException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public MaskMeException(String message) {
+        super(message);
     }
 }

@@ -18,13 +18,15 @@ public class MaskPhone implements MaskCondition {
 
     @Override
     public boolean shouldMask(Object fieldValue, Object containingObject) {
-        return "YES".equalsIgnoreCase(maskPhoneFlag) ||
-                "TRUE".equalsIgnoreCase(maskPhoneFlag);
+        return "YES".equalsIgnoreCase(maskPhoneFlag)
+                || "TRUE".equalsIgnoreCase(maskPhoneFlag)
+                || "MaskPhone".equalsIgnoreCase(maskPhoneFlag);
     }
 
     @Override
     public void setInput(Object maskPhoneFlag) {
         if (maskPhoneFlag instanceof String) {
+            System.out.println("MaskPhone input:" + maskPhoneFlag);
             this.maskPhoneFlag = (String) maskPhoneFlag;
         }
     }

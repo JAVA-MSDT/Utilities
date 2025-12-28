@@ -17,6 +17,7 @@ public class MaskOnInput implements MaskCondition {
 
     private final UserService userService;
     private String input;
+    private String expectedInput;
 
     @Override
     public boolean shouldMask(Object fieldValue, Object containingObject) {
@@ -30,6 +31,15 @@ public class MaskOnInput implements MaskCondition {
     public void setInput(Object input) {
         if (input instanceof String value) {
             this.input = value;
+        }
+    }
+
+    @Override
+    public void setExpectedInput(Object expectedInput) {
+        if (expectedInput instanceof String value) {
+            System.out.println(" Input:: " + this.input);
+            System.out.println("Expected Input:: " + value);
+            this.expectedInput = value;
         }
     }
 }

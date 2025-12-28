@@ -38,8 +38,8 @@ public class UserController {
                                      @RequestHeader("Mask-Phone") String maskPhone) {
 
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput);
-            processor.setConditionInput(MaskPhone.class, maskPhone);
+            processor.setConditionInput(MaskOnInput.class, maskInput, "MaskMe");
+            processor.setConditionInput(MaskPhone.class, maskPhone, null);
             return processor.process(userMapper.toDto(userService.findUserById(id)));
         } finally {
             processor.clearInputs();
@@ -54,7 +54,7 @@ public class UserController {
     @GetMapping
     public List<UserDto> getUsers(@RequestHeader("Mask-Input") String maskInput) {
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput);
+            processor.setConditionInput(MaskOnInput.class, maskInput, "");
             return userService.findUsers().stream()
                     .map(user -> processor.process(userMapper.toDto(user)))
                     .toList();

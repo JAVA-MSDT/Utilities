@@ -6,8 +6,7 @@
  */
 package com.javamsdt.masking.maskme.api.converter;
 
-import com.javamsdt.masking.maskme.api.masking.MaskingException;
-import lombok.NoArgsConstructor;
+import com.javamsdt.masking.maskme.api.masking.MaskMeException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -39,8 +38,11 @@ import java.util.regex.Pattern;
  * @author Ahmed Samy
  * @since 1.0.0
  */
-@NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class FieldAccessUtil {
+
+    private FieldAccessUtil() {
+        throw new MaskMeException("FieldAccessUtil is not to be initialized");
+    }
     
     private static final Pattern CONTEXT_PATTERN = Pattern.compile("\\[([^]]+)]");
 
@@ -165,7 +167,7 @@ public class FieldAccessUtil {
         try {
             return clazz.getDeclaredField(field);
         } catch (NoSuchFieldException e) {
-            throw new MaskingException("No field with name= " + field + " exists in class=" + clazz.getSimpleName(), e);
+            throw new MaskMeException("No field with name= " + field + " exists in class=" + clazz.getSimpleName(), e);
         }
     }
 }

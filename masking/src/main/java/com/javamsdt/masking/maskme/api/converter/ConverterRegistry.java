@@ -6,13 +6,12 @@
  */
 package com.javamsdt.masking.maskme.api.converter;
 
+import com.javamsdt.masking.maskme.api.masking.MaskMeException;
 import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
 import com.javamsdt.masking.maskme.implemintation.converter.DateTimeConverter;
 import com.javamsdt.masking.maskme.implemintation.converter.NumberConverter;
 import com.javamsdt.masking.maskme.implemintation.converter.PrimitiveConverter;
 import com.javamsdt.masking.maskme.implemintation.converter.SpecialTypeConverter;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -63,8 +62,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Ahmed Samy
  * @since 1.0.0
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConverterRegistry {
+
+    private ConverterRegistry() {
+        throw new MaskMeException("ConverterRegistry is not to be initialized");
+    }
 
     // ==================== SCOPED STORAGE ====================
 

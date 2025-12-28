@@ -9,10 +9,12 @@ import com.javamsdt.masking.maskconverter.CustomStringConverter;
 import com.javamsdt.masking.maskme.api.converter.ConverterRegistry;
 import com.javamsdt.masking.maskme.api.masking.FrameworkProvider;
 import com.javamsdt.masking.maskme.api.masking.MaskConditionFactory;
+import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -28,6 +30,11 @@ public class MaskingConfiguration {
         ConverterRegistry.clearGlobal();
         // Register user's custom converters
         ConverterRegistry.registerGlobal(new CustomStringConverter());
+    }
+
+    @Bean
+    public MaskProcessor maskProcessor() {
+        return new MaskProcessor();
     }
 
     public void registerMaskConditionProvider() {

@@ -69,4 +69,20 @@ public interface MaskCondition {
     default void setInput(Object input) {
         // Default implementation does nothing
     }
+
+    /**
+     * Accepts runtime input for condition evaluation.
+     * Called by MaskProcessor before shouldMask() to provide context-specific data.
+     * It can be used with the following input.Equal(expectedInput), the input is coming from setInput.
+     *
+     * <p>Use cases:
+     * - to compare 2 inputs if it is required
+     * - Provide request headers for context-aware decisions
+     * - Supply configuration flags for dynamic behavior
+     *
+     * @param expectedInput the runtime input for this condition (can be null)
+     */
+    default void setExpectedInput(Object expectedInput) {
+        // Default implementation does nothing
+    }
 }

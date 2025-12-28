@@ -2,7 +2,6 @@ package com.javamsdt.masking.maskme.api.masking;
 
 import com.javamsdt.masking.maskme.api.converter.ConverterFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -25,10 +24,9 @@ import java.util.*;
  * @since 1.0.0
  */
 @Slf4j
-@Component
 public final class MaskProcessor {
 
-    private final ThreadLocal<Map<Class<?>, Object>> conditionInputs = new ThreadLocal<>();
+    private final ThreadLocal<Map<Class<?>, Object[]>> conditionInputs = new ThreadLocal<>();
 
     // Prevent infinite recursion with circular references
     private final ThreadLocal<Set<Object>> processingObjects =
@@ -50,13 +48,13 @@ public final class MaskProcessor {
      * @param conditionClass the condition class to receive the input
      * @param input the runtime input for the condition
      */
-    public void setConditionInput(Class<? extends MaskCondition> conditionClass, Object input) {
-        Map<Class<?>, Object> inputs = conditionInputs.get();
+    public void setConditionInput(Class<? extends MaskCondition> conditionClass, Object input, Object expectedInput) {
+        Map<Class<?>, Object[]> inputs = conditionInputs.get();
         if (inputs == null) {
             inputs = new HashMap<>();
             conditionInputs.set(inputs);
         }
-        inputs.put(conditionClass, input);
+        inputs.put(conditionClass, new Object[]{input, expectedInput});
     }
 
     /**
@@ -74,7 +72,7 @@ public final class MaskProcessor {
      * }</pre>
      */
     public void clearInputs() {
-        Map<Class<?>, Object> inputs = conditionInputs.get();
+        Map<Class<?>, Object[]> inputs = conditionInputs.get();
         if (inputs != null) {
             log.info("Conditional inputs have {} Objects.", inputs.size());
             conditionInputs.remove();
@@ -367,9 +365,10 @@ public final class MaskProcessor {
                 MaskCondition condition = MaskConditionFactory.createCondition(conditionClass);
 
                 // Apply input if available
-                Map<Class<?>, Object> inputs = conditionInputs.get();
+                Map<Class<?>, Object[]> inputs = conditionInputs.get();
                 if (inputs != null && inputs.containsKey(conditionClass)) {
-                    condition.setInput(inputs.get(conditionClass));
+                    condition.setInput(inputs.get(conditionClass)[0]);
+                    condition.setExpectedInput(inputs.get(conditionClass)[1]);
                 }
 
                 if (condition.shouldMask(fieldValue, containingObject)) {

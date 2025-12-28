@@ -1,6 +1,6 @@
 package com.javamsdt.masking.maskme.api;
 
-import com.javamsdt.masking.maskme.api.masking.MaskingException;
+import com.javamsdt.masking.maskme.api.masking.MaskMeException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-@DisplayName("MaskingException Tests")
-class MaskingExceptionTest {
+@DisplayName("MaskMeException Tests")
+class MaskMeExceptionTest {
 
     @Nested
     @DisplayName("constructor")
@@ -23,7 +23,7 @@ class MaskingExceptionTest {
             RuntimeException cause = new RuntimeException("Root cause");
 
             // When
-            MaskingException exception = new MaskingException(message, cause);
+            MaskMeException exception = new MaskMeException(message, cause);
 
             // Then
             assertEquals(message, exception.getMessage());
@@ -38,7 +38,7 @@ class MaskingExceptionTest {
             Throwable cause = null;
 
             // When
-            MaskingException exception = new MaskingException(message, cause);
+            MaskMeException exception = new MaskMeException(message, cause);
 
             // Then
             assertEquals(message, exception.getMessage());

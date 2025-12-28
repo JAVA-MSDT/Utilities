@@ -6,8 +6,7 @@
  */
 package com.javamsdt.masking.maskme.api.converter;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.javamsdt.masking.maskme.api.masking.MaskMeException;
 
 /**
  * Factory for orchestrating type conversion using specialized converter chain.
@@ -30,9 +29,11 @@ import lombok.NoArgsConstructor;
  * @author Ahmed Samy
  * @since 1.0.0
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConverterFactory {
 
+    private ConverterFactory() {
+        throw new MaskMeException("ConverterFactory is not to be initialized");
+    }
     /**
      *  Main conversion method - delegates to registry.
      * Converts string maskme value to the target field type using a converter chain.
