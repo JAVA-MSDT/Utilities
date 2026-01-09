@@ -7,9 +7,9 @@
 package com.javamsdt.masking.domain;
 
 
-import com.javamsdt.masking.maskme.api.masking.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
-import com.javamsdt.masking.maskme.implemintation.masking.MaskOnInput;
+import com.javamsdt.maskme.api.annotation.MaskMe;
+import com.javamsdt.maskme.implementation.condition.AlwaysMaskMeCondition;
+import com.javamsdt.maskme.implementation.condition.MaskMeOnInput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,15 +23,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class User {
     private Long id;
-    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "*****")
+    @MaskMe(conditions = {MaskMeOnInput.class}, maskValue = "*****")
     private String name;
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     private String email;
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     private String password;
     private String phone;
     private Address address;
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     private LocalDate birthDate;
     private Gender gender;
     private BigDecimal balance;

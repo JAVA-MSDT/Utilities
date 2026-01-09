@@ -6,13 +6,15 @@
 package com.javamsdt.masking.config;
 
 import com.javamsdt.masking.maskconverter.CustomStringConverter;
-import com.javamsdt.masking.maskme.api.converter.ConverterRegistry;
-import com.javamsdt.masking.maskme.api.masking.FrameworkProvider;
-import com.javamsdt.masking.maskme.api.masking.MaskConditionFactory;
-import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
+import com.javamsdt.maskme.api.condition.MaskMeConditionFactory;
+import com.javamsdt.maskme.api.condition.MaskMeFrameworkProvider;
+import com.javamsdt.maskme.api.converter.MaskMeConverterRegistry;
+import com.javamsdt.maskme.api.processor.MaskMeProcessor;
+import com.javamsdt.maskme.logging.MaskMeLogger;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import java.util.logging.Level;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,21 +27,22 @@ public class MaskingConfiguration {
 
     @PostConstruct
     public void registerCustomConverters() {
+        // Enable with specific level
+         // MaskMeLogger.enable(Level.FINE);
+
         registerMaskConditionProvider();
         // Clear Global
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
         // Register user's custom converters
-        ConverterRegistry.registerGlobal(new CustomStringConverter());
-    }
+       // MaskMeConverterRegistry.registerGlobal(new CustomStringConverter());
 
-    @Bean
-    public MaskProcessor maskProcessor() {
-        return new MaskProcessor();
+        // Disable completely
+        // MaskMeLogger.disable();
     }
 
     public void registerMaskConditionProvider() {
         // One-time registration at startup
-        MaskConditionFactory.setFrameworkProvider(new FrameworkProvider() {
+        MaskMeConditionFactory.setFrameworkProvider(new MaskMeFrameworkProvider() {
             @Override
             public <T> T getInstance(Class<T> type) {
                 try {
@@ -53,6 +56,6 @@ public class MaskingConfiguration {
 
     @PreDestroy
     public void destroy() {
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
     }
 }

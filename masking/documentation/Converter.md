@@ -197,7 +197,7 @@ public class CustomDateConverter implements Converter {
 ### 🎪 Converter Chain Execution Flow
 
 ```
-1. User calls MaskProcessor.process(dto)
+1. User calls MaskMeProcessor.process(dto)
    ↓
 2. For each field with @Mask annotation:
    ↓
@@ -205,7 +205,7 @@ public class CustomDateConverter implements Converter {
    ↓
 4. If masking needed:
    ↓
-5. Call ConverterRegistry.convertToFieldType()
+5. Call MaskMeConverterRegistry.convertToFieldType()
    ↓
 6. Execute converters by priority:
    ├── User Converter 1 (Priority: 20) ← First match wins!
@@ -250,20 +250,20 @@ You get access to:
 **Option A: Global Scope (Application-wide)**
 ```java
 // Affects ALL threads and requests
-ConverterRegistry.registerGlobal(new CustomEmailConverter());
+MaskMeConverterRegistry.registerGlobal(new CustomEmailConverter());
 ```
 
 **Option B: Thread-Local Scope (Thread isolation)**
 ```java
 // Affects ONLY current thread
-ConverterRegistry.registerThreadLocal(new CustomEmailConverter());
+MaskMeConverterRegistry.registerThreadLocal(new CustomEmailConverter());
 ```
 
 **Option C: Request Scope (Web requests)**
 ```java
 // Affects ONLY current HTTP request
-ConverterRegistry.startRequestScope("request-123");
-ConverterRegistry.registerRequestScoped(new CustomEmailConverter());
+MaskMeConverterRegistry.startRequestScope("request-123");
+MaskMeConverterRegistry.registerRequestScoped(new CustomEmailConverter());
 ```
 
 ## 🏗️ Usage by Framework
@@ -273,7 +273,7 @@ ConverterRegistry.registerRequestScoped(new CustomEmailConverter());
 #### **Configuration Class**
 
 ```java
-import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
+
 import org.springframework.context.annotation.Bean;
 
 @Configuration
@@ -282,8 +282,8 @@ public class MaskingConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(MaskingConfiguration.class);
 
     @Bean
-    public MaskProcessor processor() {
-        return new MaskProcessor();
+    public MaskMeProcessor processor() {
+        return new MaskMeProcessor();
     }
 
     @PostConstruct
@@ -291,15 +291,15 @@ public class MaskingConfiguration {
         LOG.info("Initializing masking converters...");
 
         // ✅ SAFE: Clear global converters at startup
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
 
         // Register application-wide converters
-        ConverterRegistry.registerGlobal(new CustomEmailConverter());
-        ConverterRegistry.registerGlobal(new SensitiveDataConverter());
-        ConverterRegistry.registerGlobal(new FinancialConverter());
+        MaskMeConverterRegistry.registerGlobal(new CustomEmailConverter());
+        MaskMeConverterRegistry.registerGlobal(new SensitiveDataConverter());
+        MaskMeConverterRegistry.registerGlobal(new FinancialConverter());
 
         LOG.info("Registered {} global converters",
-                ConverterRegistry.getRegisteredConvertersByScope().get("GLOBAL").size());
+                MaskMeConverterRegistry.getRegisteredConvertersByScope().get("GLOBAL").size());
     }
 
     @PreDestroy
@@ -307,8 +307,8 @@ public class MaskingConfiguration {
         LOG.info("Cleaning up masking converters...");
 
         // Clean up at shutdown to prevent memory leaks
-        ConverterRegistry.clearGlobal();
-        ConverterRegistry.clearThreadLocal();
+        MaskMeConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearThreadLocal();
     }
 }
 ```
@@ -325,14 +325,14 @@ public class RequestScopeFilter implements Filter {
         String requestId = UUID.randomUUID().toString();
         
         // Start request scope
-        ConverterRegistry.startRequestScope(requestId);
+        MaskMeConverterRegistry.startRequestScope(requestId);
         
         // Add user-specific converters based on authentication
         if (request instanceof HttpServletRequest httpRequest) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated()) {
                 UserPrincipal user = (UserPrincipal) auth.getPrincipal();
-                ConverterRegistry.registerRequestScoped(new UserAwareConverter(user));
+                MaskMeConverterRegistry.registerRequestScoped(new UserAwareConverter(user));
             }
         }
         
@@ -340,7 +340,7 @@ public class RequestScopeFilter implements Filter {
             chain.doFilter(request, response);
         } finally {
             // ✅ SAFE: Clean up request scope
-            ConverterRegistry.endRequestScope();
+            MaskMeConverterRegistry.endRequestScope();
         }
     }
 }
@@ -349,14 +349,14 @@ public class RequestScopeFilter implements Filter {
 #### **REST Controller Example**
 
 ```java
-import com.javamsdt.masking.maskme.api.masking.MaskProcessor;
+
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final MaskProcessor processor; // Declared as a bean in your configuration
+    private final MaskMeProcessor processor; // Declared as a bean in your configuration
 
-    public UserController(MaskProcessor processor) {
+    public UserController(MaskMeProcessor processor) {
         this.processor = processor;
     }
 
@@ -383,19 +383,19 @@ public class CommandLineApp {
     
     static void main(String[] args) {
         // Initialize converters
-        ConverterRegistry.clearGlobal();
-        ConverterRegistry.registerGlobal(new CustomEmailConverter());
+        MaskMeConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.registerGlobal(new CustomEmailConverter());
         
         // Process data
         List<UserDto> users = loadUsers();
-        MaskProcessor processor = new MaskProcessor();
+        MaskMeProcessor processor = new MaskMeProcessor();
         
         List<UserDto> maskedUsers = users.stream()
             .map(processor::process)
             .collect(Collectors.toList());
         
         // Clean up
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
     }
 }
 ```
@@ -406,16 +406,16 @@ public class BackgroundJobService {
     
     public void processBatchJob(List<UserDto> batch) {
         // Add job-specific converters (thread-local)
-        ConverterRegistry.registerThreadLocal(new BatchJobConverter());
+        MaskMeConverterRegistry.registerThreadLocal(new BatchJobConverter());
         
         try {
-            MaskProcessor processor = new MaskProcessor();
+            MaskMeProcessor processor = new MaskMeProcessor();
             batch.forEach(processor::process);
             
             // Job-specific converters only affect this thread
         } finally {
             // ✅ SAFE: Clean up thread-local converters
-            ConverterRegistry.clearThreadLocal();
+            MaskMeConverterRegistry.clearThreadLocal();
         }
     }
 }
@@ -429,23 +429,23 @@ public class BackgroundJobService {
 public class MaskingInitializer {
 
     @Produces
-    public MaskProcessor processor() {
-        return new MaskProcessor();
+    public MaskMeProcessor processor() {
+        return new MaskMeProcessor();
     }
     
     @PostConstruct
     public void init() {
         // Quarkus handles hot reload - always clear first
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
         
         // Register converters
-        ConverterRegistry.registerGlobal(new CustomEmailConverter());
-        ConverterRegistry.registerGlobal(new QuarkusSpecificConverter());
+        MaskMeConverterRegistry.registerGlobal(new CustomEmailConverter());
+        MaskMeConverterRegistry.registerGlobal(new QuarkusSpecificConverter());
     }
     
     @PreDestroy
     public void destroy() {
-        ConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.clearGlobal();
     }
 }
 ```
@@ -461,7 +461,7 @@ public class UserResource {
     UserService userService;
 
     @Inject
-    MaskProcessor processor; // Declared as a bean in your configuration
+    MaskMeProcessor processor; // Declared as a bean in your configuration
     
     @GET
     @Path("/{id}")
@@ -469,18 +469,18 @@ public class UserResource {
                           @Context HttpServletRequest request) {
         
         // Start request scope for Quarkus
-        ConverterRegistry.startRequestScope(request.getRequestId());
+        MaskMeConverterRegistry.startRequestScope(request.getRequestId());
         
         try {
             // Add request-specific converters
-            ConverterRegistry.registerRequestScoped(new UserContextConverter());
+            MaskMeConverterRegistry.registerRequestScoped(new UserContextConverter());
             
             User user = userService.findById(id);
             UserDto dto = convertToDto(user);
             
             return processor.process(dto);
         } finally {
-            ConverterRegistry.endRequestScope();
+            MaskMeConverterRegistry.endRequestScope();
         }
     }
 }
@@ -494,23 +494,23 @@ public class UserResource {
 class UserServiceTest {
     
     private UserService userService;
-    private MaskProcessor processor;
+    private MaskMeProcessor processor;
     
     @BeforeEach
     void setUp() {
         userService = new UserService();
-        processor = new MaskProcessor();
+        processor = new MaskMeProcessor();
         
         // ✅ SAFE: Thread-local converters for test isolation
-        ConverterRegistry.clearThreadLocal();
-        ConverterRegistry.registerThreadLocal(new TestEmailConverter());
-        ConverterRegistry.registerThreadLocal(new TestPhoneConverter());
+        MaskMeConverterRegistry.clearThreadLocal();
+        MaskMeConverterRegistry.registerThreadLocal(new TestEmailConverter());
+        MaskMeConverterRegistry.registerThreadLocal(new TestPhoneConverter());
     }
     
     @AfterEach
     void tearDown() {
         // ✅ SAFE: Clean up only this thread's converters
-        ConverterRegistry.clearThreadLocal();
+        MaskMeConverterRegistry.clearThreadLocal();
     }
     
     @Test
@@ -542,15 +542,15 @@ class UserControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         // Clear any previous converters
-        ConverterRegistry.clearThreadLocal();
+        MaskMeConverterRegistry.clearThreadLocal();
         
         // Register test-specific converters
-        ConverterRegistry.registerThreadLocal(new IntegrationTestConverter());
+        MaskMeConverterRegistry.registerThreadLocal(new IntegrationTestConverter());
     }
     
     @AfterEach
     void tearDown() {
-        ConverterRegistry.clearThreadLocal();
+        MaskMeConverterRegistry.clearThreadLocal();
     }
     
     @Test
@@ -588,18 +588,18 @@ public class TenantConverterManager {
             String tenantId = extractTenantId(request);
             
             // Start request scope
-            ConverterRegistry.startRequestScope(request.getRequestId());
+            MaskMeConverterRegistry.startRequestScope(request.getRequestId());
             
             // Add tenant-specific converters
             List<Converter> converters = tenantConverters.get(tenantId);
             if (converters != null) {
-                converters.forEach(ConverterRegistry::registerRequestScoped);
+                converters.forEach(MaskMeConverterRegistry::registerRequestScoped);
             }
             
             try {
                 chain.doFilter(request, response);
             } finally {
-                ConverterRegistry.endRequestScope();
+                MaskMeConverterRegistry.endRequestScope();
             }
         }
     }
@@ -617,9 +617,9 @@ public class DynamicConverterService {
         List<Converter> newConverters = loadLatestConverters();
         
         // Swap converters atomically
-        synchronized (ConverterRegistry.class) {
-            ConverterRegistry.clearGlobal();
-            newConverters.forEach(ConverterRegistry::registerGlobal);
+        synchronized (MaskMeConverterRegistry.class) {
+            MaskMeConverterRegistry.clearGlobal();
+            newConverters.forEach(MaskMeConverterRegistry::registerGlobal);
         }
         
         LOG.info("Reloaded {} converters", newConverters.size());
@@ -635,9 +635,9 @@ public class BlueDeploymentConfig {
     
     @PostConstruct
     public void init() {
-        ConverterRegistry.clearGlobal();
-        ConverterRegistry.registerGlobal(new BlueDeploymentConverter());
-        ConverterRegistry.registerGlobal(new CommonConverter());
+        MaskMeConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.registerGlobal(new BlueDeploymentConverter());
+        MaskMeConverterRegistry.registerGlobal(new CommonConverter());
     }
 }
 
@@ -647,9 +647,9 @@ public class GreenDeploymentConfig {
     
     @PostConstruct
     public void init() {
-        ConverterRegistry.clearGlobal();
-        ConverterRegistry.registerGlobal(new GreenDeploymentConverter());
-        ConverterRegistry.registerGlobal(new CommonConverter());
+        MaskMeConverterRegistry.clearGlobal();
+        MaskMeConverterRegistry.registerGlobal(new GreenDeploymentConverter());
+        MaskMeConverterRegistry.registerGlobal(new CommonConverter());
     }
 }
 ```
@@ -661,24 +661,24 @@ public class GreenDeploymentConfig {
 // ✅ SAFE: Clear global converters at startup
 @PostConstruct
 public void init() {
-    ConverterRegistry.clearGlobal();
+    MaskMeConverterRegistry.clearGlobal();
     registerApplicationConverters();
 }
 
 // ✅ SAFE: Use thread-local for tests
 @BeforeEach
 void setUp() {
-    ConverterRegistry.clearThreadLocal();
-    ConverterRegistry.registerThreadLocal(new TestConverter());
+    MaskMeConverterRegistry.clearThreadLocal();
+    MaskMeConverterRegistry.registerThreadLocal(new TestConverter());
 }
 
 // ✅ SAFE: Request scope for web apps
 public void handleRequest(HttpServletRequest request) {
-    ConverterRegistry.startRequestScope(request.getId());
+    MaskMeConverterRegistry.startRequestScope(request.getId());
     try {
         // Process request
     } finally {
-        ConverterRegistry.endRequestScope();
+        MaskMeConverterRegistry.endRequestScope();
     }
 }
 ```
@@ -687,19 +687,19 @@ public void handleRequest(HttpServletRequest request) {
 ```java
 // ❌ DANGEROUS: Clear global during request processing
 public void someControllerMethod() {
-    ConverterRegistry.clearGlobal(); // Breaks other requests!
+    MaskMeConverterRegistry.clearGlobal(); // Breaks other requests!
 }
 
 // ❌ DANGEROUS: Forget to clean up
 public void backgroundJob() {
-    ConverterRegistry.registerThreadLocal(new JobConverter());
+    MaskMeConverterRegistry.registerThreadLocal(new JobConverter());
     // Forgot clearThreadLocal() - MEMORY LEAK!
 }
 
 // ❌ DANGEROUS: Mix scopes incorrectly
 public void confusingMethod() {
-    ConverterRegistry.registerGlobal(new Converter()); // Affects everyone
-    ConverterRegistry.registerThreadLocal(new Converter()); // Affects only this thread
+    MaskMeConverterRegistry.registerGlobal(new Converter()); // Affects everyone
+    MaskMeConverterRegistry.registerThreadLocal(new Converter()); // Affects only this thread
     // Which one will be used? Confusing!
 }
 ```
@@ -709,7 +709,7 @@ public void confusingMethod() {
 ### **View Active Converters**
 ```java
 // Get all converters by scope
-Map<String, List<String>> converters = ConverterRegistry.getRegisteredConvertersByScope();
+Map<String, List<String>> converters = MaskMeConverterRegistry.getRegisteredConvertersByScope();
 
 converters.forEach((scope, converterList) -> {
     System.out.println("Scope: " + scope);
@@ -736,7 +736,7 @@ public class ConverterMonitoringAspect {
     
     @Around("execution(* com.yourpackage..*.*(..))")
     public Object monitorConverterUsage(ProceedingJoinPoint joinPoint) throws Throwable {
-        String scopeInfo = ConverterRegistry.getCurrentScopeInfo();
+        String scopeInfo = MaskMeConverterRegistry.getCurrentScopeInfo();
         LOG.debug("Converter scope before {}: {}", 
             joinPoint.getSignature().getName(), scopeInfo);
         
@@ -744,7 +744,7 @@ public class ConverterMonitoringAspect {
         
         LOG.debug("Converter scope after {}: {}", 
             joinPoint.getSignature().getName(), 
-            ConverterRegistry.getCurrentScopeInfo());
+            MaskMeConverterRegistry.getCurrentScopeInfo());
         
         return result;
     }

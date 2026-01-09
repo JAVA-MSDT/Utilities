@@ -7,15 +7,15 @@
 package com.javamsdt.masking.maskconverter;
 
 
-import com.javamsdt.masking.maskme.api.converter.Converter;
+import com.javamsdt.maskme.api.converter.MaskMeConverter;
 
 /**
  * User's custom String converter with higher priority
  */
-public class CustomStringConverter implements Converter {
+public class CustomStringConverter implements MaskMeConverter {
 
     @Override
-    public int getPriority() {
+    public int priority() {
         return 10; // Higher than default converters (0)
     }
 

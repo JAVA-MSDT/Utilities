@@ -43,7 +43,7 @@ implementation 'com.masking:masking-library:2.0.0'
 com.javamsdt.masking.maskme.api/
 ├── MaskMe.java                  # Annotation for marking fields
 ├── MaskCondition.java           # Interface for masking conditions
-├── MaskProcessor.java           # Main processing engine
+├── MaskMeProcessor.java           # Main processing engine
 ├── MaskConditionFactory.java    # Spring-aware condition factory
 └── MaskingException.java        # Custom exception handling
 
@@ -58,8 +58,8 @@ com.javamsdt.masking.maskme.api.converter/
 └── FieldAccessUtil.java         # Field access and placeholder utilities
 
 com.javamsdt.masking.maskme.implemintation/
-├── AlwaysMaskCondition.java     # Always masks fields
-├── MaskOnInput.java             # Input-based conditional masking
+├── AlwaysMaskMeCondition.java     # Always masks fields
+├── MaskMeOnInput.java             # Input-based conditional masking
 └── MaskPhone.java               # Phone number masking condition
 
 com.javamsdt.masking.config/
@@ -100,7 +100,7 @@ public interface MaskCondition {
 }
 ```
 
-### 3. `MaskProcessor` Class
+### 3. `MaskMeProcessor` Class
 
 The main processing class that handles masking logic.
 
@@ -111,16 +111,16 @@ The main processing class that handles masking logic.
 #### For Records:
 ```java
 public record UserDto(
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1000")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "1000")
         Long id,
         
-        @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
+        @MaskMe(conditions = {MaskMeOnInput.class}, maskValue = "[id]-[genderId]")
         String name,
         
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "[name] it is me")
         String email,
         
-        @MaskMe(conditions = {AlwaysMaskCondition.class})
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class})
         String password,
         
         @MaskMe(conditions = {MaskPhone.class}, maskValue = "[PHONE_MASKED]")
@@ -128,16 +128,16 @@ public record UserDto(
         
         AddressDto address,
         
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "01/01/1800")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "01/01/1800")
         LocalDate birthDate,
         
         String genderId,
         String genderName,
         
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "")
         BigDecimal balance,
         
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "1900-01-01T00:00:00.00Z")
         Instant createdAt
 ) {}
 ```
@@ -145,13 +145,13 @@ public record UserDto(
 #### For Regular Classes:
 ```java
 public class User {
-    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "*****")
+    @MaskMe(conditions = {MaskMeOnInput.class}, maskValue = "*****")
     private String name;
     
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     private String email;
     
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     private LocalDate birthDate;
     
     // Getters and setters
@@ -163,7 +163,7 @@ public class User {
 #### Spring-Managed Condition (Recommended):
 ```java
 @Component
-public class MaskOnInput implements MaskCondition {
+public class MaskMeOnInput implements MaskCondition {
     
     @Autowired
     private UserService userService; // Can inject Spring beans
@@ -190,7 +190,7 @@ public class MaskOnInput implements MaskCondition {
 
 #### Always Mask Condition:
 ```java
-public class AlwaysMaskCondition implements MaskCondition {
+public class AlwaysMaskMeCondition implements MaskCondition {
     @Override
     public boolean shouldMask(Object fieldValue, Object containingObject) {
         return true;
@@ -200,11 +200,11 @@ public class AlwaysMaskCondition implements MaskCondition {
 
 #### Legacy Non-Spring Condition:
 ```java
-public class MaskOnInput implements MaskCondition {
+public class MaskMeOnInput implements MaskCondition {
     
     private String input;
     
-    public MaskOnInput() {
+    public MaskMeOnInput() {
         this.input = "";
     }
     
@@ -253,7 +253,7 @@ public class UserController {
     
     private final UserService userService;
     private final UserMapper userMapper;
-    private final MaskProcessor processor;
+    private final MaskMeProcessor processor;
     
     @GetMapping("/masked/{id}")
     public UserDto getMaskedUserById(@PathVariable final Long id,
@@ -261,7 +261,7 @@ public class UserController {
                                      @RequestHeader("Mask-Phone") String maskPhone) {
         
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput);
+            processor.setConditionInput(MaskMeOnInput.class, maskInput);
             processor.setConditionInput(MaskPhone.class, maskPhone);
             return processor.process(userMapper.toDto(userService.findUserById(id)));
         } finally {
@@ -272,7 +272,7 @@ public class UserController {
     @GetMapping
     public List<UserDto> getUsers(@RequestHeader("Mask-Input") String maskInput) {
         try {
-            processor.setConditionInput(MaskOnInput.class, maskInput);
+            processor.setConditionInput(MaskMeOnInput.class, maskInput);
             return userService.findUsers().stream()
                     .map(user -> processor.process(userMapper.toDto(user)))
                     .toList();
@@ -295,13 +295,13 @@ The library includes intelligent field-specific processing:
 
 ```java
 public record UserDto(
-    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "****")
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "****")
     String name, // Results in "****[][]"
     
-    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "[name] it is me")
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "[name] it is me")
     String email, // Results in "john@[name] it is me.domain" if original is "john@company.com"
     
-    @MaskMe(conditions = {MaskOnInput.class}, maskValue = "[id]-[genderId]")
+    @MaskMe(conditions = {MaskMeOnInput.class}, maskValue = "[id]-[genderId]")
     String displayName // Results in "123-M" if id=123 and genderId="M"
 ) {}
 ```
@@ -405,7 +405,7 @@ public class RoleBasedCondition implements MaskCondition {
 ```java
 @Configuration
 public class MaskingConfig {
-    // MaskProcessor is automatically configured as @Component
+    // MaskMeProcessor is automatically configured as @Component
     // No manual bean configuration needed
 }
 ```
@@ -418,15 +418,15 @@ public class MaskingConfig {
 @Component
 public class MaskingInitializer {
     
-    private final MaskProcessor processor;
+    private final MaskMeProcessor processor;
     
-    public MaskingInitializer(MaskProcessor processor) {
+    public MaskingInitializer(MaskMeProcessor processor) {
         this.processor = processor;
     }
     
     @PostConstruct
     public void initMasking() {
-        processor.setConditionInput(AlwaysMaskCondition.class, true);
+        processor.setConditionInput(AlwaysMaskMeCondition.class, true);
     }
 }
 ```
@@ -440,9 +440,9 @@ public class MaskingInitializer {
 public class UserController {
     
     private final UserService userService;
-    private final MaskProcessor processor;
+    private final MaskMeProcessor processor;
     
-    public UserController(UserService userService, MaskProcessor processor) {
+    public UserController(UserService userService, MaskMeProcessor processor) {
         this.userService = userService;
         this.processor = processor;
     }
@@ -456,7 +456,7 @@ public class UserController {
 
 // DTO
 public record UserDto(
-    @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "CONFIDENTIAL")
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "CONFIDENTIAL")
     String ssn
 ) {}
 ```
@@ -468,9 +468,9 @@ public record UserDto(
 public class UserController {
     
     private final UserService userService;
-    private final MaskProcessor processor;
+    private final MaskMeProcessor processor;
     
-    public UserController(UserService userService, MaskProcessor processor) {
+    public UserController(UserService userService, MaskMeProcessor processor) {
         this.userService = userService;
         this.processor = processor;
     }
@@ -532,13 +532,13 @@ For Java Records, annotations must be placed on the record components:
 ```java
 // ✓ Correct
 public record UserDto(
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     String email
 ) {}
 
 // ✗ Incorrect - won't work
 public record UserDto(String email) {
-    @MaskMe(conditions = {AlwaysMaskCondition.class})
+    @MaskMe(conditions = {AlwaysMaskMeCondition.class})
     public String email() {
         return email;
     }
@@ -594,7 +594,7 @@ The library uses a modular converter system that automatically converts mask val
 class MaskingTest {
     
     @Autowired
-    private MaskProcessor processor;
+    private MaskMeProcessor processor;
     
     @Test
     public void testMaskingWithInput() {
@@ -603,7 +603,7 @@ class MaskingTest {
         
         try {
             // When
-            processor.setConditionInput(MaskOnInput.class, "MaskMe");
+            processor.setConditionInput(MaskMeOnInput.class, "MaskMe");
             UserDto masked = processor.process(original);
             
             // Then
@@ -698,7 +698,7 @@ public class BusinessLogicCondition implements MaskCondition {
 @GetMapping("/users")
 public List<UserDto> getUsers(@RequestHeader("MaskMe-Input") String input) {
     try {
-        processor.setConditionInput(MaskOnInput.class, input);
+        processor.setConditionInput(MaskMeOnInput.class, input);
         return users.stream().map(processor::process).toList();
     } finally {
         processor.clearInputs(); // Always clear
