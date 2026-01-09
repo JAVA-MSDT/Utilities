@@ -6,17 +6,16 @@
  */
 package com.javamsdt.masking.dto;
 
-
-import com.javamsdt.masking.maskme.api.masking.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.maskme.api.annotation.MaskMe;
+import com.javamsdt.maskme.implementation.condition.AlwaysMaskMeCondition;
 
 import java.util.UUID;
 
 public record GeoLocationDto(
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "00000000-0000-0000-0000-000000000000")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "00000000-0000-0000-0000-000000000000")
         UUID id,
         Double longitude,
-        @MaskMe(conditions = {AlwaysMaskCondition.class}, maskValue = "00.0000")
+        @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "00.0000")
         Double latitude
 ) {
 }

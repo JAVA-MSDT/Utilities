@@ -7,14 +7,14 @@
 package com.javamsdt.masking.dto;
 
 
-import com.javamsdt.masking.maskme.api.masking.MaskMe;
-import com.javamsdt.masking.maskme.implemintation.masking.AlwaysMaskCondition;
+import com.javamsdt.maskme.api.annotation.MaskMe;
+import com.javamsdt.maskme.implementation.condition.AlwaysMaskMeCondition;
 
 public record AddressDto(
          Long id,
          String street,
          String building,
-         @MaskMe(conditions = {AlwaysMaskCondition.class})
+         @MaskMe(conditions = {AlwaysMaskMeCondition.class})
          String city,
          String state,
          String zipCode,
