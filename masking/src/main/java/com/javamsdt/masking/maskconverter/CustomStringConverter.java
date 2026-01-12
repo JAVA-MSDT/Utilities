@@ -8,6 +8,7 @@ package com.javamsdt.masking.maskconverter;
 
 
 import com.javamsdt.maskme.api.converter.MaskMeConverter;
+import com.javamsdt.maskme.api.utils.MaskMeFieldAccessUtil;
 
 /**
  * User's custom String converter with higher priority
@@ -27,6 +28,8 @@ public class CustomStringConverter implements MaskMeConverter {
     @Override
     public Object convert(String value, Class<?> targetType, Object originalValue,
                           Object containingObject, String fieldName) {
+
+        value = MaskMeFieldAccessUtil.getMaskedValueFromAnotherFieldOrMaskedValue(value, containingObject);
 
         // User's custom logic for String fields
         if (fieldName.contains("password")) {

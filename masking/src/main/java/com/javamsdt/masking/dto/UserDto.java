@@ -24,7 +24,6 @@ public record UserDto(
         String email,
         @MaskMe(conditions = {AlwaysMaskMeCondition.class})
         String password,
-        @MaskMe(conditions = {MaskMeOnInput.class}, maskValue = "[PHONE_MASKED]")
         String phone,
         AddressDto address,
         @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "01/01/1800")

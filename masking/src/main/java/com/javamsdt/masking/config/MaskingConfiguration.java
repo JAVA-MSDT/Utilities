@@ -9,15 +9,14 @@ import com.javamsdt.masking.maskconverter.CustomStringConverter;
 import com.javamsdt.maskme.api.condition.MaskMeConditionFactory;
 import com.javamsdt.maskme.api.condition.MaskMeFrameworkProvider;
 import com.javamsdt.maskme.api.converter.MaskMeConverterRegistry;
-import com.javamsdt.maskme.api.processor.MaskMeProcessor;
 import com.javamsdt.maskme.logging.MaskMeLogger;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
-import java.util.logging.Level;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.logging.Level;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,13 +27,14 @@ public class MaskingConfiguration {
     @PostConstruct
     public void registerCustomConverters() {
         // Enable with specific level
-         // MaskMeLogger.enable(Level.FINE);
+        MaskMeLogger.enable(Level.FINE);
 
         registerMaskConditionProvider();
         // Clear Global
         MaskMeConverterRegistry.clearGlobal();
+
         // Register user's custom converters
-       // MaskMeConverterRegistry.registerGlobal(new CustomStringConverter());
+        MaskMeConverterRegistry.registerGlobal(new CustomStringConverter());
 
         // Disable completely
         // MaskMeLogger.disable();
