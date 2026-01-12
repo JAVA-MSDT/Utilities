@@ -6,6 +6,7 @@
  */
 package com.javamsdt.masking.dto;
 
+import com.javamsdt.masking.custommaskme.PhoneMaskingCondition;
 import com.javamsdt.maskme.api.annotation.MaskMe;
 import com.javamsdt.maskme.implementation.condition.AlwaysMaskMeCondition;
 import com.javamsdt.maskme.implementation.condition.MaskMeOnInput;
@@ -24,6 +25,7 @@ public record UserDto(
         String email,
         @MaskMe(conditions = {AlwaysMaskMeCondition.class})
         String password,
+        @MaskMe(conditions = {PhoneMaskingCondition.class})
         String phone,
         AddressDto address,
         @MaskMe(conditions = {AlwaysMaskMeCondition.class}, maskValue = "01/01/1800")

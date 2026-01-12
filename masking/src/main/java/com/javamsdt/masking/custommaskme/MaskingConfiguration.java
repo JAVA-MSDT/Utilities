@@ -3,9 +3,8 @@
  * LinkedIn: https://www.linkedin.com/in/java-msdt/
  * GitHub: https://github.com/JAVA-MSDT
  */
-package com.javamsdt.masking.config;
+package com.javamsdt.masking.custommaskme;
 
-import com.javamsdt.masking.maskconverter.CustomStringConverter;
 import com.javamsdt.maskme.api.condition.MaskMeConditionFactory;
 import com.javamsdt.maskme.api.condition.MaskMeFrameworkProvider;
 import com.javamsdt.maskme.api.converter.MaskMeConverterRegistry;

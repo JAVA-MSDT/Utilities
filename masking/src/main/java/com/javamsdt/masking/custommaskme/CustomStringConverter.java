@@ -4,7 +4,7 @@
  * GitHub: https://github.com/JAVA-MSDT
  * Email: serenitydiver@hotmail.com
  */
-package com.javamsdt.masking.maskconverter;
+package com.javamsdt.masking.custommaskme;
 
 
 import com.javamsdt.maskme.api.converter.MaskMeConverter;
@@ -28,9 +28,9 @@ public class CustomStringConverter implements MaskMeConverter {
     @Override
     public Object convert(String value, Class<?> targetType, Object originalValue,
                           Object containingObject, String fieldName) {
-
+        System.out.println("Value:: " + value);
         value = MaskMeFieldAccessUtil.getMaskedValueFromAnotherFieldOrMaskedValue(value, containingObject);
-
+        System.out.println("Processed Value:: " + value);
         // User's custom logic for String fields
         if (fieldName.contains("password")) {
             return "************";
