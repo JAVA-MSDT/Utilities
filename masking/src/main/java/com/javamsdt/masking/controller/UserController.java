@@ -6,19 +6,17 @@
  */
 package com.javamsdt.masking.controller;
 
+import com.javamsdt.masking.custommaskme.PhoneMaskingCondition;
 import com.javamsdt.masking.domain.User;
 import com.javamsdt.masking.dto.UserDto;
 import com.javamsdt.masking.mapper.UserMapper;
-
 import com.javamsdt.masking.service.UserService;
 import com.javamsdt.maskme.MaskMeInitializer;
-import com.javamsdt.maskme.api.processor.MaskMeProcessor;
 import com.javamsdt.maskme.implementation.condition.MaskMeOnInput;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -38,7 +36,7 @@ public class UserController {
                                      @RequestHeader("Mask-Input") String maskInput,
                                      @RequestHeader("Mask-Phone") String maskPhone) {
 
-        return MaskMeInitializer.mask(userMapper.toDto(userService.findUserById(id)), MaskMeOnInput.class, maskInput);
+        return MaskMeInitializer.mask(userMapper.toDto(userService.findUserById(id)), maskingObjects(maskInput, maskPhone));
     }
 
     @GetMapping("/user/{id}")
@@ -52,5 +50,10 @@ public class UserController {
             return userService.findUsers().stream()
                     .map(user -> MaskMeInitializer.mask(userMapper.toDto(user), MaskMeOnInput.class, maskInput))
                     .toList();
+    }
+
+    private Object[] maskingObjects(String inputMask, String phoneMask) {
+        return  new Object[]{MaskMeOnInput.class, inputMask,
+                PhoneMaskingCondition.class, phoneMask};
     }
 }

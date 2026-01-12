@@ -15,7 +15,7 @@ public class PhoneMaskingCondition implements MaskMeCondition {
 
     @Override
     public boolean shouldMask(Object fieldValue, Object containingObject) {
-
+        System.out.println(userService.findUserById(1L));
         return input != null && input.equalsIgnoreCase(EXPECTED_INPUT);
     }
 
